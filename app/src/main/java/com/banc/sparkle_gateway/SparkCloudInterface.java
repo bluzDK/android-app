@@ -87,16 +87,20 @@ public class SparkCloudInterface {
 	}
 	public byte[] Read() throws IOException {
 		//need to append our service ID and socket number to the beginning of the data
-		byte[] data = new byte[inputStream.available()+4];
-		data[0] = 0x00;
-		data[1] = 0x01;
-		data[2] = 0x00;
-		data[3] = 0x00;
+//		byte[] data = new byte[inputStream.available()+4];
+//		data[0] = 0x00;
+//		data[1] = 0x01;
+//		data[2] = 0x00;
+//		data[3] = Sending data to Cloud of size:00;
+//
+//		//copy the cloud data in with the service ID and socket number
+//		inputStream.read(data, 4, inputStream.available());
 
-		//copy the cloud data in with the service ID and socket number
-		inputStream.read(data, 4, inputStream.available());
-	    StringBuilder sb = new StringBuilder();
-	    
+
+		byte[] data = new byte[inputStream.available()];
+		inputStream.read(data, 0, inputStream.available());
+
+		StringBuilder sb = new StringBuilder();
 	    for (byte b : data) {
 	        sb.append(String.format("%02X ", b));
 	    }

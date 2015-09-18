@@ -47,6 +47,7 @@ public abstract class AbstractService extends Service {
                 //super.handleMessage(msg);
             	onReceiveMessage(msg);
             }
+            removeMessages(0);
         }
     }
     
