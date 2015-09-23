@@ -240,8 +240,14 @@ public class BLEService extends AbstractService implements Observer {
         } else {
 			if (sparkSocket.Connected()) {
 //        	Log.d("BLESerivce", "buffer: " + ulBuffer + " has length " + ulBuffer.length + " with current position set to " + ulBufferLength);
-				System.arraycopy(data, 0, ulBuffer, ulBufferLength, data.length);
-				ulBufferLength += data.length;
+				if (ulBufferLength == 0) {
+					//this is the first packaet in the stream. check the header
+					System.arraycopy(data, 4, ulBuffer, ulBufferLength, data.length-4);
+					ulBufferLength += (data.length-4);
+				} else {
+					System.arraycopy(data, 0, ulBuffer, ulBufferLength, data.length);
+					ulBufferLength += (data.length);
+				}
 			}
         }
         //bleManager.send(new byte[]{0x55});
