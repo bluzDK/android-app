@@ -20,10 +20,11 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-
+import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import java.util.UUID;
 
 import com.banc.BLEManagement.BLEDeviceInfoList;
@@ -39,7 +40,10 @@ public class BLESelection extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		Log.d("GloveSelection", "Creating Glove Selection");
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_glove);
+		setContentView(R.layout.activity_ble_list);
+
+		ParticleCloudSDK.init(this);
+
 		this.sManager = new ServiceManager(this, BLEService.class, new HandlerExtension());
 		if (!sManager.isRunning()) {
 			Log.d("GloveSelection", "Service is not running. Starting!");
@@ -59,6 +63,13 @@ public class BLESelection extends Activity {
 		Log.d("GloveSelection", "Starting Glove Selection");
 		//always do this first
 		super.onStart();
+
+		Button loginButton = (Button)findViewById(R.id.loginButton);
+		Button scanButton = (Button)findViewById(R.id.scanButton);
+
+		if (ParticleCloudSDK.getCloud().isLoggedIn()) {
+			loginButton.setText("Logout");
+		}
 		
 		sManager.bind();
 		//tell the service to stop discovery
@@ -100,7 +111,26 @@ public class BLESelection extends Activity {
         
         sManager.stop();
         sManager.unbind();
-    }    
+    }
+
+	public void loginButtonPressed(View view) {
+		// Do something in response to button
+		Log.d("Clicked", "Clicked");
+		if (ParticleCloudSDK.getCloud().isLoggedIn()) {
+			ParticleCloudSDK.getCloud().logOut();
+			Button loginButton = (Button)findViewById(R.id.loginButton);
+			loginButton.setText("Login");
+		} else {
+			Intent intent = new Intent(this, ParticleLoginDisplay.class);
+			startActivity(intent);
+		}
+	}
+
+	public void scanButtonPressed(View view) {
+		// Do something in response to button
+		Log.d("Clicked", "Clicked");
+
+	}
 	
 	Intent intent;
 	private void updateTable(BLEDeviceInfoList devices) 
@@ -119,9 +149,10 @@ public class BLESelection extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				android.widget.RelativeLayout item = (android.widget.RelativeLayout)view;
-				TextView addressTextView = (TextView)item.findViewById(R.id.deviceAddress);
+//				TextView addressTextView = (TextView)item.findViewById(R.id.deviceAddress);
 				TextView nameTextView = (TextView)item.findViewById(R.id.deviceName);
-				String address = addressTextView.getText().toString();
+//				String address = addressTextView.getText().toString();
+				String address = "";
 				String deviceName = nameTextView.getText().toString();
 				Log.d("DEBUG", "User selected " + address);
 				Message msg = new Message();
@@ -150,7 +181,6 @@ public class BLESelection extends Activity {
 			
 			if (type != -1)
 			{
-				Log.d("GloveSelection", "Received BLEEvent in UI");
 				//this means it is a BLEEvent from the service
 				BLEEvent event = (BLEEvent)msg.obj;
 				if (event.BLEEventType == BLEEvent.EVENT_UPDATE)
@@ -160,7 +190,6 @@ public class BLESelection extends Activity {
 				}
 			} else {
 				//otherwise, it is a message from the ServiceManager
-				Log.d("GloveSelection", "Received ServiceManager Message in UI");
 				type = msg.getData().getInt("info", -1);
 				if (type == ServiceManager.SERVICE_BOUND)
 				{

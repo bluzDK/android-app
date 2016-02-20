@@ -36,6 +36,16 @@ public class BLEDeviceInfoList {
 	{
 		return bleDevices.get(index);
 	}
+	public BLEDeviceInfo GetBLEDeviceInfoByAddress(String address)
+	{
+		for (BLEDeviceInfo b : bleDevices) {
+			if (b.GetMAC() == address) {
+				return b;
+			}
+		}
+		return null;
+	}
+
 	public int GetCount()
 	{
 		return bleDevices.size();

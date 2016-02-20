@@ -1,76 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="80dp"
     android:background="@drawable/list_selector"
     android:orientation="horizontal"
     android:padding="5dip" >
-    
-    <!--  ListRow Left sied Thumbnail image -->
-    <LinearLayout android:id="@+id/thumbnail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="3dip"
-        android:layout_alignParentLeft="true"
-        android:background="@drawable/image_bg"
-        android:layout_marginRight="5dip">
- 
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:weightSum="1">
         <ImageView
             android:id="@+id/list_image"
             android:layout_width="50dip"
             android:layout_height="50dip"
-            android:src="@drawable/bluz_icon" />
- 
+            android:src="@drawable/bluz_icon"
+            android:layout_marginTop="10dp" />
+
+        <!-- Name of Device-->
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="194dp"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_weight="0.21">
+            <TextView
+                android:id="@+id/deviceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/thumbnail"
+                android:layout_toRightOf="@+id/thumbnail"
+                android:text="Bluz DK"
+                android:textColor="#040404"
+                android:textSize="15dip"
+                android:textStyle="bold"
+                android:typeface="sans"
+                android:layout_marginTop="5dp" />
+            <TextView
+                android:id="@+id/deviceRssi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="RSSI: -43"
+                android:textSize="10dip"
+                android:textColor="#10bcc9"
+                android:textStyle="bold"
+                android:layout_below="@+id/thumbnail"
+                android:layout_alignParentStart="true" />
+
+            <!-- Address of Device -->
+            <TextView
+                android:id="@+id/deviceCloudName"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:textColor="#343434"
+                android:textSize="10dip"
+                android:text="porcupine mall"
+                android:layout_alignTop="@+id/button2"
+                android:layout_toEndOf="@+id/thumbnail" />
+
+            <TextView
+                android:id="@+id/deviceCloudId"
+                android:layout_width="172dp"
+                android:layout_height="wrap_content"
+                android:textColor="#343434"
+                android:textSize="10dip"
+                android:text="b1e200000123456789abcdef"
+                android:layout_alignTop="@+id/button2"
+                android:layout_toEndOf="@+id/thumbnail" />
+
+        </LinearLayout>
+
+        <!-- RSSI -->
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="101dp"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:weightSum="1">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:text="Connect"
+                android:id="@+id/connectButton"
+                android:textSize="12dip"
+                android:layout_alignTop="@+id/deviceName"
+                android:layout_alignEnd="@+id/deviceCloudName"
+                android:layout_above="@+id/deviceCloudName"
+                android:layout_weight="0.33" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:text="Claim"
+                android:id="@+id/claimButton"
+                android:textSize="12dip"
+                android:layout_alignBaseline="@+id/deviceCloudId"
+                android:layout_alignBottom="@+id/deviceCloudId"
+                android:layout_alignStart="@+id/button"
+                android:layout_weight=".33" />
+        </LinearLayout>
+
     </LinearLayout>
- 
-    <!-- Name of Device-->
 
-    <TextView
-        android:id="@+id/deviceName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/thumbnail"
-        android:layout_toRightOf="@+id/thumbnail"
-        android:text="SparkLE"
-        android:textColor="#040404"
-        android:textSize="15dip"
-        android:textStyle="bold"
-        android:typeface="sans" />
- 
-    <!-- Address of Device -->
-    <TextView
-        android:id="@+id/deviceAddress"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/deviceName"
-        android:textColor="#343434"
-        android:textSize="10dip"
-        android:layout_marginTop="1dip"
-        android:layout_toRightOf="@+id/thumbnail"
-        android:text="00:1C:48:F3:2D:75" />
- 
-    <!-- RSSI -->
-    <TextView
-        android:id="@+id/deviceRssi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/deviceName"
-        android:gravity="right"
-        android:text="-43 dBm"
-        android:layout_marginRight="5dip"
-        android:textSize="10dip"
-        android:textColor="#10bcc9"
-        android:textStyle="bold"/>
- 
-     <!-- Rightend Arrow -->
+    <!-- Rightend Arrow -->
 
-     <ImageView
-         android:id="@+id/right_arrow"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_alignParentRight="true"
-         android:layout_centerVertical="true"
-         android:src="@drawable/arrow_right" />
- 
 </RelativeLayout>

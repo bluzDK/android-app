@@ -1,5 +1,6 @@
 package com.banc.sparkle_gateway;
 
+import com.banc.BLEManagement.BLEDeviceInfo;
 import com.banc.BLEManagement.BLEDeviceInfoList;
 import com.banc.BLEManagement.BLEEvent;
 import com.banc.BLEManagement.BLEManager;
@@ -78,7 +79,7 @@ public class BLEDisplay extends Activity {
 				BLEEvent event = (BLEEvent) msg.obj;
 				if (event.BLEEventType == BLEEvent.EVENT_DEVICE_STATE_CHANGE) {
 					int newState = event.State;
-					if (newState == BLEManager.STATE_DISCONNECTED)
+					if (newState == BLEDeviceInfo.STATE_DISCONNECTED)
 					{
 						mainTitle.setTextColor(Color.RED);
 						mainTitle.setText("You are disconnected from: " + name);

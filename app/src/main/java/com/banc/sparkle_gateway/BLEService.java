@@ -1,26 +1,17 @@
 package com.banc.sparkle_gateway;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.Observable;
 import java.util.Observer;
 
-import com.banc.BLEManagement.BLEDeviceInfoList;
+import com.banc.BLEManagement.BLEDeviceInfo;
 import com.banc.BLEManagement.BLEEvent;
 import com.banc.BLEManagement.BLEManager;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
-import android.provider.ContactsContract.PhoneLookup;
 import android.util.Log;
-import android.view.KeyEvent;
 
 public class BLEService extends AbstractService implements Observer {
 	private BLEManager bleManager;
@@ -38,8 +29,6 @@ public class BLEService extends AbstractService implements Observer {
     byte[] dlBuffer, ulBuffer;
     int ulBufferLength;
     
-    SparkCloudInterface sparkSocket;
-    
     AudioManager audio;  
     
     class ReaderThread implements Runnable {
@@ -50,25 +39,29 @@ public class BLEService extends AbstractService implements Observer {
 			run = true;
 			// TODO Auto-generated method stub
 			while (run) {
-				try {
-					int bytesAvailable = sparkSocket.Available();
-					Log.d("BLEService", "Connected: " + Boolean.toString(sparkSocket.Connected()) + "  Bytes Available: " + bytesAvailable);
-					if (bytesAvailable > 0) {
-						dlBuffer = sparkSocket.Read();
+				for (int i = 0; i < bleManager.GetList().GetCount(); i++) {
+					BLEDeviceInfo devInfo = bleManager.GetList().GetBLEDeviceInfo(i);
+					if (devInfo.particleSocket.Connected()) {
+						try {
+							int bytesAvailable = devInfo.particleSocket.Available();
+//					Log.d("BLEService", "Connected: " + Boolean.toString(sparkSocket.Connected()) + "  Bytes Available: " + bytesAvailable);
+							if (bytesAvailable > 0) {
+								dlBuffer = devInfo.particleSocket.Read();
 //						Log.d("BLEService", "We read some bytes from SPark Cloud: " + dlBuffer.length);
-						bleManager.send(dlBuffer);
-						byte[] eosBuffer = {0x03, 0x04};
-						bleManager.send(eosBuffer);
+								byte[] header = {0x01, 0x00};
+								bleManager.send(devInfo, dlBuffer, header);
+							}
+							try {
+								Thread.sleep(1);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
 		}
@@ -84,7 +77,6 @@ public class BLEService extends AbstractService implements Observer {
 	public void onStartService() {
 		bleManager = new BLEManager(this.GetContext());
 		bleManager.addObserver(this);
-		sparkSocket = new SparkCloudInterface();
 	}
 
 	@Override
@@ -97,6 +89,7 @@ public class BLEService extends AbstractService implements Observer {
 	public void onReceiveMessage(Message msg) {
 		// TODO Auto-generated method stub
 		Log.d("SparkLEService", "Received message");
+		String address;
 		try {
 			int info = msg.getData().getInt("info");
 			Log.d("SparkLEService", "Received message: " + info);
@@ -109,9 +102,9 @@ public class BLEService extends AbstractService implements Observer {
 //				updateUI(event);
 //				break;
 			case CONNECT:
-				String address = msg.getData().getString("address");
+				address = msg.getData().getString("address");
 				bleManager.connect(address);
-				while (!bleManager.isInitialized()) {
+				while (!bleManager.isInitialized(address)) {
 					Thread.sleep(100);
 				}
 				Log.d("BLEService", "We are now connected and initialized!");				
@@ -129,9 +122,10 @@ public class BLEService extends AbstractService implements Observer {
 			case DISCONNECT:
 				//String address = msg.getData().getString("address");
 				Log.d("SparkLEService", "Disconnecting BLE");
-				readerThread.stop();
-				bleManager.disconnect();
-				sparkSocket.Disconnect();
+				address = msg.getData().getString("address");
+				BLEDeviceInfo devInfo = bleManager.GetBLEDeviceInfoByAddress(address);
+				devInfo.particleSocket.Disconnect();
+				bleManager.disconnect(address);
 				break;
 			case START_DISCOVERY:
 				Log.d("SparkLEService", "Starting Discovery");
@@ -155,7 +149,7 @@ public class BLEService extends AbstractService implements Observer {
 		// TODO Auto-generated method stub
 //		Log.d("SparkLEServices", "Received event from BLEManager");
 		BLEEvent event = (BLEEvent)data;
-		handleNewState(event.State);
+		handleNewState(event.DeviceInfo, event.State);
 		switch (event.BLEEventType)
 		{
 			case BLEEvent.EVENT_UPDATE:
@@ -165,21 +159,21 @@ public class BLEService extends AbstractService implements Observer {
 				updateUI(event);
 				break;
 			case BLEEvent.EVENT_RX_DATA:
-				processData((byte[]) event.Contents);
+				processData(event.DeviceInfo, (byte[]) event.Contents);
 				break;
 		}
 	}
 
-	private void handleNewState(int newState)
+	private void handleNewState(BLEDeviceInfo devInfo, int newState)
 	{
 		switch (newState)
 		{
-			case BLEManager.STATE_DISCONNECTED:
+			case BLEDeviceInfo.STATE_DISCONNECTED:
 				Log.d("BLEService", "Handling BLE disconnection");
 				readerThread.stop();
-				bleManager.disconnect();
+				bleManager.disconnect(devInfo.GetMAC());
 				try {
-					sparkSocket.Disconnect();
+					devInfo.particleSocket.Disconnect();
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -197,7 +191,7 @@ public class BLEService extends AbstractService implements Observer {
     }
 	    
     //Called when the SparkLE transmits data to us
-    private synchronized void processData(byte[] data) {
+    private synchronized void processData(BLEDeviceInfo devInfo, byte[] data) {
 //    	Log.d("BLEService", "Got data: " + data + " of length " + data.length);
     	
     	StringBuilder sb = new StringBuilder();
@@ -208,18 +202,18 @@ public class BLEService extends AbstractService implements Observer {
         
 	    if (data[0] == 0x03 && data[1] == 0x04) {
         	try {
-				if (sparkSocket.Connected()) {
-					Log.d("BLEService", "Got a full buffer, attempting to send it up");
+				if (devInfo.particleSocket.Connected()) {
+//					Log.d("BLEService", "Got a full buffer, attempting to send it up");
 					byte[] tmpBuffer = new byte[ulBufferLength];
 					System.arraycopy(ulBuffer, 0, tmpBuffer, 0, ulBufferLength);
 //        			Log.d("BLEService", "About to write this many bytes " + tmpBuffer.length);
-					sparkSocket.Write(tmpBuffer);
-					Log.d("BLEManager", "Received this many bytes from BLE: " + tmpBuffer.length);
+					devInfo.particleSocket.Write(tmpBuffer);
+//					Log.d("BLEManager", "Received this many bytes from BLE: " + tmpBuffer.length);
 				}
 				else {
 					try {
 						Log.d("SparkLEService", "Not Connected. Attempting to connect to cloud");
-						sparkSocket.Connect();
+						devInfo.particleSocket.Connect();
 						readerThread = new ReaderThread();
 						Thread rThread = new Thread(readerThread);
 						//rThread.setUncaughtExceptionHandler(new ExceptionHandler());
@@ -238,12 +232,12 @@ public class BLEService extends AbstractService implements Observer {
         	ulBuffer = new byte[512];
         	ulBufferLength = 0;
         } else {
-			if (sparkSocket.Connected()) {
+			if (devInfo.particleSocket.Connected()) {
 //        	Log.d("BLESerivce", "buffer: " + ulBuffer + " has length " + ulBuffer.length + " with current position set to " + ulBufferLength);
 				if (ulBufferLength == 0) {
 					//this is the first packaet in the stream. check the header
-					System.arraycopy(data, 4, ulBuffer, ulBufferLength, data.length-4);
-					ulBufferLength += (data.length-4);
+					System.arraycopy(data, 2, ulBuffer, ulBufferLength, data.length-2);
+					ulBufferLength += (data.length-2);
 				} else {
 					System.arraycopy(data, 0, ulBuffer, ulBufferLength, data.length);
 					ulBufferLength += (data.length);

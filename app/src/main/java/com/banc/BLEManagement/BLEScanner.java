@@ -21,29 +21,24 @@ public class BLEScanner extends Observable implements Runnable, BluetoothAdapter
 	public void run() {
 		runScanner = true;
 		BLEDeviceInfoList devices = new BLEDeviceInfoList();
-		
+
+		Log.d("BLEScanner", "Running Scan!");
+		newDevices = new BLEDeviceInfoList();
+		BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		bluetoothAdapter.startLeScan(
+				//new UUID[]{ BLEManager.UUID_SERVICE },
+				this);
+		Log.d("DEBUG", "BLE Scan Started");
 		while (runScanner)
 		{
-			Log.d("BLEScanner", "Running Scan!");
-			newDevices = new BLEDeviceInfoList();
-			BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-			bluetoothAdapter.startLeScan(
-	                //new UUID[]{ BLEManager.UUID_SERVICE },
-	                this);
-	        Log.d("DEBUG", "BLE Scan Started");
-	        
 	        try {
-				Thread.sleep(30000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	        
-	        //HACK FOR NOW!!! NOT WHAT I WANT TO DO!!!!!
-	        //This is always updating the UI, which is very inefficient
-	        //Instead, we should only search for devices that are lost/added
-	        bluetoothAdapter.stopLeScan(this);
-		}   
+		}
+		bluetoothAdapter.stopLeScan(this);
 	}
 	
 	public void stop()

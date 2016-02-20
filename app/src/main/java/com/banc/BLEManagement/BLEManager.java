@@ -3,12 +3,9 @@ package com.banc.BLEManagement;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Observer;
 import java.util.Observable;
 import java.util.UUID;
-
-import com.banc.sparkle_gateway.SparkCloudInterface;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -24,17 +21,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
-import android.os.Message;
 import android.util.Log;
 
 public class BLEManager extends Observable implements Observer {
-	// State machine
-    final public static int STATE_BLUETOOTH_OFF = 1;
-    final public static int STATE_DISCONNECTED = 2;
-    final public static int STATE_CONNECTING = 3;
-    final public static int STATE_CONNECTED = 4;
-    private int state;
     
     //flags for keeping track of scanning state
     private boolean scanStarted;
@@ -46,9 +35,6 @@ public class BLEManager extends Observable implements Observer {
 	
 	private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
-    private String mBluetoothDeviceAddress;
-    private BluetoothGatt mBluetoothGatt;
-    private BluetoothGattService mBluetoothGattService;
     
     public final static String ACTION_CONNECTED =
             "com.banc.ACTION_CONNECTED";
@@ -82,16 +68,20 @@ public class BLEManager extends Observable implements Observer {
 		//set up the bluetooth registers and start scanning
 		context.registerReceiver(scanModeReceiver, new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
         context.registerReceiver(bluetoothStateReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
-        context.registerReceiver(sparkleReceiver, getIntentFilter());
+//        context.registerReceiver(sparkleReceiver, getIntentFilter());
         
         Log.d("DEBUG", "Bluetooth Registers Setup!");
 //        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        updateState(bluetoothAdapter.isEnabled() ? STATE_DISCONNECTED : STATE_BLUETOOTH_OFF);
         
         scanner = new BLEScanner();
-        
-        Log.d("DEBUG", "Bluetooth is: " + state);
 	}
+
+    public BLEDeviceInfoList GetList() {return scanner.newDevices;}
+    public BLEDeviceInfo GetBLEDeviceInfoByAddress(String address)
+    {
+        return scanner.newDevices.GetBLEDeviceInfoByAddress(address);
+    }
 	
 	public void start() {
 		/*bluetoothAdapter.startLeScan(
@@ -109,19 +99,19 @@ public class BLEManager extends Observable implements Observer {
 		scanner.stop();
 	}
 	
-	private void upgradeState(int newState) {
-        if (newState > state) {
-            updateState(newState);
-        }
-    }
-	private void downgradeState(int newState) {
-        if (newState < state) {
-            updateState(newState);
-        }
-    }
+//	private void upgradeState(int newState) {
+//        if (newState > state) {
+//            updateState(newState);
+//        }
+//    }
+//	private void downgradeState(int newState) {
+//        if (newState < state) {
+//            updateState(newState);
+//        }
+//    }
 
-    private void updateState(int newState) {
-        state = newState;
+    private void updateState(BLEDeviceInfo devInfo, int newState) {
+        devInfo.State = newState;
         //TO DO
         //Send a BLEEvent with the new state
         Log.d(TAG, "Changing state to " + newState);
@@ -136,9 +126,9 @@ public class BLEManager extends Observable implements Observer {
         public void onReceive(Context context, Intent intent) {
             int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0);
             if (state == BluetoothAdapter.STATE_ON) {
-                upgradeState(STATE_DISCONNECTED);
+//                upgradeState(BLEDeviceInfo.STATE_DISCONNECTED);
             } else if (state == BluetoothAdapter.STATE_OFF) {
-                downgradeState(STATE_BLUETOOTH_OFF);
+//                downgradeState(BLEDeviceInfo.STATE_BLUETOOTH_OFF);
             }
         }
     };
@@ -188,7 +178,6 @@ public class BLEManager extends Observable implements Observer {
 		Log.d("DEBUG", "Received event from BLEScanner");
 		BLEEvent e = new BLEEvent();
 		e.BLEEventType = BLEEvent.EVENT_UPDATE;
-        e.State = state;
 		e.Contents = (BLEDeviceInfoList)data;
 		SendEvent(e);
 	}
@@ -199,21 +188,24 @@ public class BLEManager extends Observable implements Observer {
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.i(TAG, "Connected to Sparkle.");
                 Log.i(TAG, "Attempting to start service discovery:" +
-                        mBluetoothGatt.discoverServices());
+                        devInfo.mBluetoothGatt.discoverServices());
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i(TAG, "Disconnected from Sparkle.");
-                broadcastUpdate(ACTION_DISCONNECTED);
+//                broadcastUpdate(ACTION_DISCONNECTED);
+                updateState(devInfo, BLEDeviceInfo.STATE_DISCONNECTED);
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
         	Log.d("BLEManager", "Found status " + status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                mBluetoothGattService = gatt.getService(UUID_SERVICE);
+                devInfo.mBluetoothGattService = gatt.getService(UUID_SERVICE);
                 Log.d("BLEManager", "Looking for service " + UUID_SERVICE);
                 
                 ArrayList<BluetoothGattService> services = (ArrayList<BluetoothGattService>) gatt.getServices();
@@ -224,15 +216,15 @@ public class BLEManager extends Observable implements Observer {
                     Log.d("BLEManager", "Found GATT service " + obj.getUuid());
                 }
                 
-                if (mBluetoothGattService == null) {
+                if (devInfo.mBluetoothGattService == null) {
                     Log.e(TAG, "Sparkle GATT service not found!");
                     return;
                 }
 
                 BluetoothGattCharacteristic receiveCharacteristic =
-                        mBluetoothGattService.getCharacteristic(UUID_RECEIVE);
+                        devInfo. mBluetoothGattService.getCharacteristic(UUID_RECEIVE);
                 
-                ArrayList<BluetoothGattCharacteristic> characteristics = (ArrayList<BluetoothGattCharacteristic>) mBluetoothGattService.getCharacteristics();
+                ArrayList<BluetoothGattCharacteristic> characteristics = (ArrayList<BluetoothGattCharacteristic>) devInfo.mBluetoothGattService.getCharacteristics();
                 Iterator<BluetoothGattCharacteristic> iter = characteristics.iterator();
                 while(iter.hasNext())
                 {
@@ -272,7 +264,8 @@ public class BLEManager extends Observable implements Observer {
                     Log.e(TAG, "Sparkle receive characteristic not found!");
                 }
 
-                broadcastUpdate(ACTION_CONNECTED);
+//                broadcastUpdate(ACTION_CONNECTED);
+                updateState(devInfo, BLEDeviceInfo.STATE_CONNECTED);
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
@@ -285,49 +278,62 @@ public class BLEManager extends Observable implements Observer {
 //        	Log.d("BLEManager", "Characteristic Read");
             if (status == BluetoothGatt.GATT_SUCCESS) {
 //            	Log.d("DEBUG", "Data available");
-                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
+//                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                BLEEvent event = new BLEEvent();
+            	event.BLEEventType = BLEEvent.EVENT_RX_DATA;
+                event.State = devInfo.State;
+            	event.Contents = characteristic.getValue();
+            	SendEvent(event);
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-        	Log.d("BLEManager", "Characteristic Read");
-            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+//        	Log.d("BLEManager", "Characteristic Read");
+            BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
+//            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            BLEEvent event = new BLEEvent();
+            event.BLEEventType = BLEEvent.EVENT_RX_DATA;
+            event.State = devInfo.State;
+            event.Contents = characteristic.getValue();
+            SendEvent(event);
         }
         
         @Override
         public void onCharacteristicWrite (BluetoothGatt gatt, 
         		BluetoothGattCharacteristic characteristic, 
         		int status) {
-        	android.util.Log.d("BLEManager ", "  Millisecinds on event " + System.currentTimeMillis());
+            BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
+//        	android.util.Log.d("BLEManager ", "  Millisecinds on event " + System.currentTimeMillis());
         	BluetoothGattCharacteristic writeChar =
-                    mBluetoothGattService.getCharacteristic(UUID_SEND);        	
+                    devInfo.mBluetoothGattService.getCharacteristic(UUID_SEND);
         	if (writeChar == characteristic) {
-        		android.util.Log.d("BLEManager ", "  Millisecinds success " + System.currentTimeMillis());        		
+//        		android.util.Log.d("BLEManager ", "  Millisecinds success " + System.currentTimeMillis());
         		transmissionDone = true;
         	}
         	
         }
     };
     
-    private final BroadcastReceiver sparkleReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (ACTION_CONNECTED.equals(action)) {
-                upgradeState(STATE_CONNECTED);
-            } else if (ACTION_DISCONNECTED.equals(action)) {
-                downgradeState(STATE_DISCONNECTED);
-            } else if (ACTION_DATA_AVAILABLE.equals(action)) {
-            	BLEEvent event = new BLEEvent();
-            	event.BLEEventType = BLEEvent.EVENT_RX_DATA;
-                event.State = state;
-            	event.Contents = intent.getByteArrayExtra(EXTRA_DATA);
-            	SendEvent(event);
-            }
-        }
-    };
+//    private final BroadcastReceiver sparkleReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            final String action = intent.getAction();
+//            if (ACTION_CONNECTED.equals(action)) {
+//                upgradeState(BLEDeviceInfo.STATE_CONNECTED);
+//            } else if (ACTION_DISCONNECTED.equals(action)) {
+//                downgradeState(BLEDeviceInfo.STATE_DISCONNECTED);
+//            } else if (ACTION_DATA_AVAILABLE.equals(action)) {
+//            	BLEEvent event = new BLEEvent();
+//            	event.BLEEventType = BLEEvent.EVENT_RX_DATA;
+//                event.State = state;
+//            	event.Contents = intent.getByteArrayExtra(EXTRA_DATA);
+//            	SendEvent(event);
+//            }
+//        }
+//    };
     
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -414,7 +420,7 @@ public class BLEManager extends Observable implements Observer {
      *         callback.
      */
     public boolean connect(final String address) {
-    	
+        BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(address);
     	//stop scanning as we have found our device
     	scanner.stop();
     	
@@ -433,9 +439,8 @@ public class BLEManager extends Observable implements Observer {
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = device.connectGatt(context, false, mGattCallback);
+        devInfo.mBluetoothGatt = device.connectGatt(context, false, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
-        mBluetoothDeviceAddress = address;
         return true;
     }
 
@@ -445,20 +450,13 @@ public class BLEManager extends Observable implements Observer {
      * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      * callback.
      */
-    public void disconnect() {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+    public void disconnect(String address) {
+        BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(address);
+        if (mBluetoothAdapter == null || devInfo.mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
-        mBluetoothGatt.disconnect();
-    }
-
-    public void close() {
-        if (mBluetoothGatt == null) {
-            return;
-        }
-        mBluetoothGatt.close();
-        mBluetoothGatt = null;
+        devInfo.mBluetoothGatt.disconnect();
     }
 
 //    /**
@@ -485,22 +483,23 @@ public class BLEManager extends Observable implements Observer {
 //        mBluetoothGatt.readCharacteristic(characteristic);
 //    }
 //
-    public boolean isInitialized() {
-    	if (mBluetoothGatt == null || mBluetoothGattService == null) {
+    public boolean isInitialized(String address) {
+        BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(address);
+    	if (devInfo.mBluetoothGatt == null || devInfo.mBluetoothGattService == null) {
     		return false;
     	} else {
     		return true;
     	}
     }
     
-    public boolean send(byte[] data) {
-        if (mBluetoothGatt == null || mBluetoothGattService == null) {
+    public boolean send(BLEDeviceInfo devInfo, byte[] data, byte[] header) {
+        if (devInfo.mBluetoothGatt == null || devInfo.mBluetoothGattService == null) {
             Log.w(TAG, "BluetoothGatt not initialized");
             return false;
         }
 
         BluetoothGattCharacteristic characteristic =
-                mBluetoothGattService.getCharacteristic(UUID_SEND);
+                devInfo.mBluetoothGattService.getCharacteristic(UUID_SEND);
 
         if (characteristic == null) {
             Log.w(TAG, "Send characteristic not found");
@@ -508,31 +507,58 @@ public class BLEManager extends Observable implements Observer {
         }
 
         boolean success = false;
-        byte[] buffer = new byte[20];
-        for (int i = 0; i < data.length; i+=20) {
-        	int size = (data.length-i > 20 ? 20 : data.length-i);
-        	byte[] tmpBuffer = new byte[size];
-        	int originalIndex = 0;
-        	for (int j = i; j < i+size; j++) {
-        		tmpBuffer[originalIndex] = data[j];
-        		originalIndex++;
-        	}
-        	Log.d("BLEManager", "Sending down this many bytes on BLE: " + tmpBuffer.length);
-        	
-        	StringBuilder sb = new StringBuilder();    
-    	    for (byte b : tmpBuffer) {
-    	        sb.append(String.format("%02X ", b));
-    	    }    	    
-//    	    Log.d("BLEManager", "Sending Down: " + sb.toString());
-	        
-    	    characteristic.setValue(tmpBuffer);
-	        characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
-	        transmissionDone = false;
+        int maxChunk = 960;
+        for (int chunkPointer = 0; chunkPointer < data.length; chunkPointer += maxChunk) {
 
-	        android.util.Log.d("BLEManager ", "  Millisecinds before send " + System.currentTimeMillis());
-	        success = mBluetoothGatt.writeCharacteristic(characteristic);        	
-        	while (!transmissionDone) { }
-        	Log.d("BLEManager", "Success of send: " + success);
+            int chunkLength = (data.length-chunkPointer > maxChunk ? maxChunk : data.length-chunkPointer);
+
+            characteristic.setValue(header);
+            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            transmissionDone = false;
+
+//            android.util.Log.d("BLEManager ", "  Millisecinds before send " + System.currentTimeMillis());
+            devInfo.mBluetoothGatt.writeCharacteristic(characteristic);
+            while (!transmissionDone) {
+            }
+            android.util.Log.d("BLEManager ", "Sent Header" );
+
+            byte[] buffer = new byte[20];
+            for (int i = 0; i < chunkLength; i += 20) {
+                int size = (chunkLength - i > 20 ? 20 : chunkLength - i);
+                byte[] tmpBuffer = new byte[size];
+                int originalIndex = 0;
+                for (int j = i; j < i + size; j++) {
+                    tmpBuffer[originalIndex] = data[chunkPointer+j];
+                    originalIndex++;
+                }
+//                Log.d("BLEManager", "Sending down this many bytes on BLE: " + tmpBuffer.length);
+
+                StringBuilder sb = new StringBuilder();
+                for (byte b : tmpBuffer) {
+                    sb.append(String.format("%02X ", b));
+                }
+//    	    Log.d("BLEManager", "Sending Down: " + sb.toString());
+
+                characteristic.setValue(tmpBuffer);
+                characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+                transmissionDone = false;
+
+//                android.util.Log.d("BLEManager ", "  Millisecinds before send " + System.currentTimeMillis());
+                success = devInfo.mBluetoothGatt.writeCharacteristic(characteristic);
+                while (!transmissionDone) {
+                }
+//                Log.d("BLEManager", "Success of send: " + success);
+            }
+            byte[] eosBuffer = {0x03, 0x04};
+            characteristic.setValue(eosBuffer);
+            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            transmissionDone = false;
+
+//            android.util.Log.d("BLEManager ", "  Millisecinds before send " + System.currentTimeMillis());
+            success = devInfo.mBluetoothGatt.writeCharacteristic(characteristic);
+            while (!transmissionDone) {}
+            android.util.Log.d("BLEManager ", "Sent EOS" );
+            android.util.Log.d("BLEManager ", Integer.toString(chunkPointer) + " bytes have gone down so far" );
         }
         return success;
     }

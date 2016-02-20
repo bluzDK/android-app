@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class DeviceAdapter extends BaseAdapter {
@@ -44,16 +45,27 @@ public class DeviceAdapter extends BaseAdapter {
             vi = inflater.inflate(R.layout.list_row, null);
  
         TextView name = (TextView)vi.findViewById(R.id.deviceName); // title
-        TextView address = (TextView)vi.findViewById(R.id.deviceAddress); // artist name
+//        TextView address = (TextView)vi.findViewById(R.id.deviceAddress); // artist name
         TextView rssi = (TextView)vi.findViewById(R.id.deviceRssi); // duration
+		TextView cloudName = (TextView)vi.findViewById(R.id.deviceCloudName); // duration
+		TextView cloudId = (TextView)vi.findViewById(R.id.deviceCloudId); // duration
+		Button claimButton = (Button)vi.findViewById(R.id.claimButton); // duration
  
         BLEDeviceInfo device = devices.GetBLEDeviceInfo(position);
  
         Log.d("DEBUG", "Adding device with name " + device.GetName());
         // Setting all values in listview
         name.setText(device.GetName());
-        address.setText(device.GetMAC());
+//        address.setText(device.GetMAC());
         rssi.setText(Integer.toString(device.GetRSSI()));
+		cloudId.setText(device.GetCloudID());
+		cloudName.setText(device.GetCloudName());
+		claimButton.setVisibility(View.INVISIBLE);
+		if (device.GetCloudID() != "" && !device.IsClaimed())
+		{
+			claimButton.setVisibility(View.VISIBLE);
+		}
+
         return vi;
 	}
 

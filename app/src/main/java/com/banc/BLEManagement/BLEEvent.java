@@ -9,5 +9,6 @@ public class BLEEvent {
 
     public int BLEEventType;
     public int State;
+    public BLEDeviceInfo DeviceInfo;
     public Object Contents;
 }

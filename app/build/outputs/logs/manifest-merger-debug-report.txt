@@ -15,6 +15,10 @@ ADDED from AndroidManifest.xml:2:1
 		INJECTED from AndroidManifest.xml:0:0
 uses-sdk
 ADDED from AndroidManifest.xml:7:5
+MERGED from com.android.support:support-v4:23.1.1:20:5
+MERGED from io.particle:cloudsdk:0.3.4:7:5
+MERGED from com.android.support:support-v4:23.1.1:20:5
+MERGED from net.danlew:android.joda:2.9.0:6:5
 	android:targetSdkVersion
 		ADDED from AndroidManifest.xml:9:9
 		INJECTED from AndroidManifest.xml:0:0
@@ -33,10 +37,13 @@ ADDED from AndroidManifest.xml:12:5
 		ADDED from AndroidManifest.xml:12:22
 uses-permission#android.permission.INTERNET
 ADDED from AndroidManifest.xml:13:5
+MERGED from io.particle:cloudsdk:0.3.4:11:5
 	android:name
 		ADDED from AndroidManifest.xml:13:22
 application
 ADDED from AndroidManifest.xml:15:5
+MERGED from com.android.support:support-v4:23.1.1:22:5
+MERGED from com.android.support:support-v4:23.1.1:22:5
 	android:label
 		ADDED from AndroidManifest.xml:18:9
 	android:allowBackup
@@ -75,3 +82,11 @@ ADDED from AndroidManifest.xml:34:9
 		ADDED from AndroidManifest.xml:36:13
 	android:name
 		ADDED from AndroidManifest.xml:35:13
+activity#com.banc.sparkle_gateway.ParticleLoginDisplay
+ADDED from AndroidManifest.xml:40:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:43:13
+	android:label
+		ADDED from AndroidManifest.xml:42:13
+	android:name
+		ADDED from AndroidManifest.xml:41:13
