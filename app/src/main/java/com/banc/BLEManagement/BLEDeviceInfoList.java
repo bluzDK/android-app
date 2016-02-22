@@ -82,4 +82,13 @@ public class BLEDeviceInfoList {
 		}
 		return found;
 	}
+
+	public void clearNonConnected() {
+		Iterator<BLEDeviceInfo> iter = bleDevices.listIterator();
+		while (iter.hasNext()) {
+			if (iter.next().State != BLEDeviceInfo.STATE_CONNECTED) {
+				iter.remove();
+			}
+		}
+	}
 }

@@ -58,7 +58,10 @@ public class ParticleSocket {
 	public void Disconnect() throws UnknownHostException, IOException {
 		inputStream.close();
 		outputStream.close();
-		socket.close();		
+		socket.close();
+		inputStream = null;
+		outputStream = null;
+		socket = null;
 	}
 	public void Write(byte[] data) throws IOException {
 //		Log.d("SparkleCloudInterface", "When writing, are we connected: " + Boolean.toString(socket.isConnected()));
@@ -87,32 +90,33 @@ public class ParticleSocket {
 	}
 	public byte[] Read() throws IOException {
 		//need to append our service ID and socket number to the beginning of the data
-		int bytesAvailable = inputStream.available();
+		byte[] data = new byte[0];
+		if (inputStream != null) {
+			int bytesAvailable = inputStream.available();
 
-		try {
-			Thread.sleep(500);
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-		}
+			try {
+				Thread.sleep(500);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 
-		bytesAvailable = inputStream.available();
-		byte[] data = new byte[bytesAvailable];
+			bytesAvailable = inputStream.available();
+			data = new byte[bytesAvailable];
 
 //		//copy the cloud data in with the service ID and socket number
-		inputStream.read(data, 0, bytesAvailable);
+			inputStream.read(data, 0, bytesAvailable);
 
 
 //		byte[] data = new byte[inputStream.available()];
 //		inputStream.read(data, 0, inputStream.available());
 
-		StringBuilder sb = new StringBuilder();
-	    for (byte b : data) {
-	        sb.append(String.format("%02X ", b));
-	    }
-	    Log.d("SparkleCloudInterface", "Got data: " + sb.toString());
-	    Log.d("SparkleCloudInterface", "Got data from Cloud of size: " + data.length);
+			StringBuilder sb = new StringBuilder();
+			for (byte b : data) {
+				sb.append(String.format("%02X ", b));
+			}
+			Log.d("SparkleCloudInterface", "Got data: " + sb.toString());
+			Log.d("SparkleCloudInterface", "Got data from Cloud of size: " + data.length);
+		}
 
 //	    System.out.println(sb.toString());
 		return data;

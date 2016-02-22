@@ -9,8 +9,12 @@ import com.banc.BLEManagement.BLEEvent;
 import com.banc.BLEManagement.BLEManager;
 
 import android.media.AudioManager;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
+import android.content.Intent;
 import android.os.Message;
+import android.os.Looper;
 import android.util.Log;
 
 public class BLEService extends AbstractService implements Observer {
@@ -26,52 +30,7 @@ public class BLEService extends AbstractService implements Observer {
     private boolean askedSMS = false;
     private boolean commandMode = false;
     
-    byte[] dlBuffer, ulBuffer;
-    int ulBufferLength;
-    
-    AudioManager audio;  
-    
-    class ReaderThread implements Runnable {
-
-		boolean run = true;
-		@Override
-		public void run() {
-			run = true;
-			// TODO Auto-generated method stub
-			while (run) {
-				for (int i = 0; i < bleManager.GetList().GetCount(); i++) {
-					BLEDeviceInfo devInfo = bleManager.GetList().GetBLEDeviceInfo(i);
-					if (devInfo.particleSocket.Connected()) {
-						try {
-							int bytesAvailable = devInfo.particleSocket.Available();
-//					Log.d("BLEService", "Connected: " + Boolean.toString(sparkSocket.Connected()) + "  Bytes Available: " + bytesAvailable);
-							if (bytesAvailable > 0) {
-								dlBuffer = devInfo.particleSocket.Read();
-//						Log.d("BLEService", "We read some bytes from SPark Cloud: " + dlBuffer.length);
-								byte[] header = {0x01, 0x00};
-								bleManager.send(devInfo, dlBuffer, header);
-							}
-							try {
-								Thread.sleep(1);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-
-		public void stop()
-		{
-			run = false;
-		}
-    }
-    ReaderThread readerThread;
+    AudioManager audio;
 
 	@Override
 	public void onStartService() {
@@ -124,7 +83,6 @@ public class BLEService extends AbstractService implements Observer {
 				Log.d("SparkLEService", "Disconnecting BLE");
 				address = msg.getData().getString("address");
 				BLEDeviceInfo devInfo = bleManager.GetBLEDeviceInfoByAddress(address);
-				devInfo.particleSocket.Disconnect();
 				bleManager.disconnect(address);
 				break;
 			case START_DISCOVERY:
@@ -149,34 +107,43 @@ public class BLEService extends AbstractService implements Observer {
 		// TODO Auto-generated method stub
 //		Log.d("SparkLEServices", "Received event from BLEManager");
 		BLEEvent event = (BLEEvent)data;
-		handleNewState(event.DeviceInfo, event.State);
+		if (event.DeviceInfo == null) {
+			Log.d("WTF!!!", "devInfo is null!");
+		}
 		switch (event.BLEEventType)
 		{
 			case BLEEvent.EVENT_UPDATE:
 				updateUI(event);
 				break;
 			case BLEEvent.EVENT_DEVICE_STATE_CHANGE:
+				handleNewState(event.DeviceInfo, event.State);
 				updateUI(event);
 				break;
 			case BLEEvent.EVENT_RX_DATA:
-				processData(event.DeviceInfo, (byte[]) event.Contents);
+				Log.d("BLEService", "Calling devInfo processData");
+				event.DeviceInfo.processData((byte[]) event.Contents);
 				break;
 		}
 	}
 
-	private void handleNewState(BLEDeviceInfo devInfo, int newState)
+	private void handleNewState(final BLEDeviceInfo devInfo, int newState)
 	{
 		switch (newState)
 		{
 			case BLEDeviceInfo.STATE_DISCONNECTED:
 				Log.d("BLEService", "Handling BLE disconnection");
-				readerThread.stop();
-				bleManager.disconnect(devInfo.GetMAC());
-				try {
-					devInfo.particleSocket.Disconnect();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+				devInfo.disconnect();
+				break;
+			case BLEDeviceInfo.STATE_CONNECTED:
+				Log.d("BLEService", "Starting timer for Get ID!!");
+				Handler handler = new Handler(Looper.getMainLooper());
+				handler.postDelayed(new Runnable() {
+
+					public void run() {
+						Log.d("BLEService", "Running Get ID!!");
+						devInfo.PollParticleId();
+					}
+				}, 22000);
 				break;
 		}
 	}
@@ -185,68 +152,23 @@ public class BLEService extends AbstractService implements Observer {
     	Message msg = Message.obtain(null, 2);
 		Bundle b = new Bundle();
 		b.putInt("BLEEventType", event.BLEEventType);
-		msg.setData(b);		
+		msg.setData(b);
 		msg.obj = event;
 		send(msg);
     }
-	    
-    //Called when the SparkLE transmits data to us
-    private synchronized void processData(BLEDeviceInfo devInfo, byte[] data) {
-//    	Log.d("BLEService", "Got data: " + data + " of length " + data.length);
-    	
-    	StringBuilder sb = new StringBuilder();
-	    for (byte b : data) {
-	        sb.append(String.format("%02X ", b));
-	    }
-//	    Log.d("BLEService", "Processing Data: " + sb.toString());
-        
-	    if (data[0] == 0x03 && data[1] == 0x04) {
-        	try {
-				if (devInfo.particleSocket.Connected()) {
-//					Log.d("BLEService", "Got a full buffer, attempting to send it up");
-					byte[] tmpBuffer = new byte[ulBufferLength];
-					System.arraycopy(ulBuffer, 0, tmpBuffer, 0, ulBufferLength);
-//        			Log.d("BLEService", "About to write this many bytes " + tmpBuffer.length);
-					devInfo.particleSocket.Write(tmpBuffer);
-//					Log.d("BLEManager", "Received this many bytes from BLE: " + tmpBuffer.length);
-				}
-				else {
-					try {
-						Log.d("SparkLEService", "Not Connected. Attempting to connect to cloud");
-						devInfo.particleSocket.Connect();
-						readerThread = new ReaderThread();
-						Thread rThread = new Thread(readerThread);
-						//rThread.setUncaughtExceptionHandler(new ExceptionHandler());
-						rThread.start();
-						ulBuffer = new byte[512];
-						ulBufferLength = 0;
-					}
-					catch (Exception ex)
-					{
-						ex.printStackTrace();
-					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-        	ulBuffer = new byte[512];
-        	ulBufferLength = 0;
-        } else {
-			if (devInfo.particleSocket.Connected()) {
-//        	Log.d("BLESerivce", "buffer: " + ulBuffer + " has length " + ulBuffer.length + " with current position set to " + ulBufferLength);
-				if (ulBufferLength == 0) {
-					//this is the first packaet in the stream. check the header
-					System.arraycopy(data, 2, ulBuffer, ulBufferLength, data.length-2);
-					ulBufferLength += (data.length-2);
-				} else {
-					System.arraycopy(data, 0, ulBuffer, ulBufferLength, data.length);
-					ulBufferLength += (data.length);
-				}
-			}
-        }
-        //bleManager.send(new byte[]{0x55});
-        
-        //TO DO: Handle BLE messages
-    }
+
+	static public void DeviceInfoChanged() {
+		BLEEvent event = new BLEEvent();
+		event.Contents = BLEManager.GetList();
+		event.BLEEventType = BLEEvent.EVENT_DEVICE_STATE_CHANGE;
+		event.State = 0;
+		event.DeviceInfo = null;
+		Message msg = Message.obtain(null, 2);
+		Bundle b = new Bundle();
+		b.putInt("BLEEventType", event.BLEEventType);
+		msg.setData(b);
+		msg.obj = event;
+		send(msg);
+	}
 
 }

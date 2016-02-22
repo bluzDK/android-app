@@ -14,7 +14,7 @@ public class BLEScanner extends Observable implements Runnable, BluetoothAdapter
 	
 	public BLEScanner()
 	{
-		
+		newDevices = new BLEDeviceInfoList();
 	}
 	
 	@Override
@@ -23,7 +23,7 @@ public class BLEScanner extends Observable implements Runnable, BluetoothAdapter
 		BLEDeviceInfoList devices = new BLEDeviceInfoList();
 
 		Log.d("BLEScanner", "Running Scan!");
-		newDevices = new BLEDeviceInfoList();
+		newDevices.clearNonConnected();
 		BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		bluetoothAdapter.startLeScan(
 				//new UUID[]{ BLEManager.UUID_SERVICE },

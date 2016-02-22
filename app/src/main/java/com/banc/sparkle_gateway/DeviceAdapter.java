@@ -17,10 +17,12 @@ public class DeviceAdapter extends BaseAdapter {
 	
 	private BLEDeviceInfoList devices;
 	private static LayoutInflater inflater=null;
+	BLESelection parentActivity;
 	
 	public DeviceAdapter(Activity activity, BLEDeviceInfoList d) {
 		devices = d;
 		inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		parentActivity = (BLESelection)activity;
 	}
 
 	@Override
@@ -49,20 +51,31 @@ public class DeviceAdapter extends BaseAdapter {
         TextView rssi = (TextView)vi.findViewById(R.id.deviceRssi); // duration
 		TextView cloudName = (TextView)vi.findViewById(R.id.deviceCloudName); // duration
 		TextView cloudId = (TextView)vi.findViewById(R.id.deviceCloudId); // duration
+		Button connectButton = (Button)vi.findViewById(R.id.connectButton); // duration
 		Button claimButton = (Button)vi.findViewById(R.id.claimButton); // duration
+
+		connectButton.setTag(position);
+		connectButton.setOnClickListener(parentActivity.connectButtonClicked);
+
+		claimButton.setTag(position);
+		claimButton.setOnClickListener(parentActivity.claimButtonClicked);
  
         BLEDeviceInfo device = devices.GetBLEDeviceInfo(position);
+
+		connectButton.setText("Connect");
+		if (device.State == BLEDeviceInfo.STATE_CONNECTED) {
+			connectButton.setText("Disconnect");
+		}
  
         Log.d("DEBUG", "Adding device with name " + device.GetName());
         // Setting all values in listview
-        name.setText(device.GetName());
+		name.setText(device.GetName());
 //        address.setText(device.GetMAC());
-        rssi.setText(Integer.toString(device.GetRSSI()));
+		rssi.setText(Integer.toString(device.GetRSSI()));
 		cloudId.setText(device.GetCloudID());
 		cloudName.setText(device.GetCloudName());
 		claimButton.setVisibility(View.INVISIBLE);
-		if (device.GetCloudID() != "" && !device.IsClaimed())
-		{
+		if (device.GetCloudID() != "" && !device.IsClaimed()) {
 			claimButton.setVisibility(View.VISIBLE);
 		}
 

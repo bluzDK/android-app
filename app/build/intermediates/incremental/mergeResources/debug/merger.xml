@@ -647,15 +647,15 @@
     </plurals><string msgid="5506831244263083793" name="joda_time_android_preposition_for_time">"um <ns1:g id="TIME">%s</ns1:g>"</string><string msgid="1818557177829411417" name="joda_time_android_relative_time">"<ns1:g id="DATE">%1$s</ns1:g>, <ns1:g id="TIME">%2$s</ns1:g>"</string><plurals name="joda_time_android_in_num_days">
         <item msgid="5413088743009839518" quantity="one">"morgen"</item>
         <item msgid="5109449375100953247" quantity="other">"in <ns1:g id="COUNT">%d</ns1:g> Tagen"</item>
-    </plurals><plurals name="joda_time_android_abbrev_in_num_hours">
-        <item msgid="3274708118124045246" quantity="one">"in 1 Stunde"</item>
-        <item msgid="3705373766798013406" quantity="other">"In <ns1:g id="COUNT">%d</ns1:g> Stunden"</item>
     </plurals><plurals name="joda_time_android_abbrev_in_num_minutes">
         <item msgid="562786149928284878" quantity="one">"in 1 Minute"</item>
         <item msgid="4216113292706568726" quantity="other">"in <ns1:g id="COUNT">%d</ns1:g> Minuten"</item>
     </plurals><plurals name="joda_time_android_num_days_ago">
         <item msgid="861358534398115820" quantity="one">"gestern"</item>
         <item msgid="2479586466153314633" quantity="other">"vor <ns1:g id="COUNT">%d</ns1:g> Tagen"</item>
+    </plurals><plurals name="joda_time_android_abbrev_in_num_hours">
+        <item msgid="3274708118124045246" quantity="one">"in 1 Stunde"</item>
+        <item msgid="3705373766798013406" quantity="other">"In <ns1:g id="COUNT">%d</ns1:g> Stunden"</item>
     </plurals><plurals name="joda_time_android_duration_hours">
         <item msgid="8917467491248809972" quantity="one">"1 Stunde"</item>
         <item msgid="3863962854246773930" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> Stunden"</item>
@@ -1103,18 +1103,18 @@
     </plurals><string msgid="9093949757757445117" name="joda_time_android_preposition_for_date">"در <ns1:g id="DATE">%s</ns1:g>"</string><plurals name="joda_time_android_abbrev_in_num_days">
         <item msgid="2178576254385739855" quantity="one">"فردا"</item>
         <item msgid="2973062968038355991" quantity="other">"در <ns1:g id="COUNT">%d</ns1:g> روز"</item>
-    </plurals><plurals name="joda_time_android_in_num_seconds">
-        <item msgid="2729745560954905102" quantity="one">"در ۱ ثانیه"</item>
-        <item msgid="1241926116443974687" quantity="other">"در <ns1:g id="COUNT">%d</ns1:g> ثانیه"</item>
     </plurals><plurals name="joda_time_android_num_seconds_ago">
         <item msgid="4869870056547896011" quantity="one">"۱ ثانیه قبل"</item>
         <item msgid="3903706804349556379" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> ثانیه قبل"</item>
-    </plurals><plurals name="joda_time_android_abbrev_in_num_hours">
-        <item msgid="3274708118124045246" quantity="one">"در ۱ ساعت"</item>
-        <item msgid="3705373766798013406" quantity="other">"در <ns1:g id="COUNT">%d</ns1:g> ساعت"</item>
+    </plurals><plurals name="joda_time_android_in_num_seconds">
+        <item msgid="2729745560954905102" quantity="one">"در ۱ ثانیه"</item>
+        <item msgid="1241926116443974687" quantity="other">"در <ns1:g id="COUNT">%d</ns1:g> ثانیه"</item>
     </plurals><plurals name="joda_time_android_in_num_hours">
         <item msgid="7164353342477769999" quantity="one">"در ۱ ساعت"</item>
         <item msgid="547290677353727389" quantity="other">"در <ns1:g id="COUNT">%d</ns1:g> ساعت"</item>
+    </plurals><plurals name="joda_time_android_abbrev_in_num_hours">
+        <item msgid="3274708118124045246" quantity="one">"در ۱ ساعت"</item>
+        <item msgid="3705373766798013406" quantity="other">"در <ns1:g id="COUNT">%d</ns1:g> ساعت"</item>
     </plurals><string name="joda_time_android_date_time">%2$s،‏ %1$s</string><plurals name="joda_time_android_num_days_ago">
         <item msgid="861358534398115820" quantity="one">"ديروز"</item>
         <item msgid="2479586466153314633" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> روز قبل"</item>
@@ -1217,15 +1217,15 @@
     </plurals><string name="joda_time_android_date_time">%1$s à %2$s</string><plurals name="joda_time_android_duration_seconds">
         <item msgid="6962015528372969481" quantity="one">"1 seconde"</item>
         <item msgid="1886107766577166786" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> secondes"</item>
+    </plurals><string msgid="5506831244263083793" name="joda_time_android_preposition_for_time">"à <ns1:g id="TIME">%s</ns1:g>"</string><plurals name="joda_time_android_num_hours_ago">
+        <item msgid="9150797944610821849" quantity="one">"il y a 1 heure"</item>
+        <item msgid="2467273239587587569" quantity="other">"Il y a <ns1:g id="COUNT">%d</ns1:g> heures"</item>
     </plurals><plurals name="joda_time_android_abbrev_num_minutes_ago">
         <item msgid="6361490147113871545" quantity="one">"il y a 1 minute"</item>
         <item msgid="851164968597150710" quantity="other">"il y a <ns1:g id="COUNT">%d</ns1:g> minutes"</item>
     </plurals><plurals name="joda_time_android_duration_minutes">
         <item msgid="4915414002546085617" quantity="one">"1 minute"</item>
         <item msgid="3165187169224908775" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> minutes"</item>
-    </plurals><string msgid="5506831244263083793" name="joda_time_android_preposition_for_time">"à <ns1:g id="TIME">%s</ns1:g>"</string><plurals name="joda_time_android_num_hours_ago">
-        <item msgid="9150797944610821849" quantity="one">"il y a 1 heure"</item>
-        <item msgid="2467273239587587569" quantity="other">"Il y a <ns1:g id="COUNT">%d</ns1:g> heures"</item>
     </plurals><plurals name="joda_time_android_num_minutes_ago">
         <item msgid="3306787433088810191" quantity="one">"Il y a 1 minute"</item>
         <item msgid="2176942008915455116" quantity="other">"Il y a <ns1:g id="COUNT">%d</ns1:g> minutes"</item>
@@ -1562,15 +1562,15 @@
     </plurals><plurals name="joda_time_android_abbrev_in_num_days">
         <item msgid="2178576254385739855" quantity="one">"վաղը"</item>
         <item msgid="2973062968038355991" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> օրից"</item>
-    </plurals><plurals name="joda_time_android_in_num_hours">
-        <item msgid="7164353342477769999" quantity="one">"1 ժամից"</item>
-        <item msgid="547290677353727389" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> ժամից"</item>
     </plurals><plurals name="joda_time_android_duration_hours">
         <item msgid="8917467491248809972" quantity="one">"1 ժամ"</item>
         <item msgid="3863962854246773930" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> ժամ"</item>
     </plurals><plurals name="joda_time_android_num_days_ago">
         <item msgid="861358534398115820" quantity="one">"երեկ"</item>
         <item msgid="2479586466153314633" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> օր առաջ"</item>
+    </plurals><plurals name="joda_time_android_in_num_hours">
+        <item msgid="7164353342477769999" quantity="one">"1 ժամից"</item>
+        <item msgid="547290677353727389" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> ժամից"</item>
     </plurals><plurals name="joda_time_android_abbrev_num_days_ago">
         <item msgid="8463161711492680309" quantity="one">"երեկ"</item>
         <item msgid="3453342639616481191" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> օր առաջ"</item>
@@ -2471,15 +2471,15 @@
     </plurals><string name="joda_time_android_date_time">%2$s %1$s</string><plurals name="joda_time_android_abbrev_in_num_days">
         <item msgid="2178576254385739855" quantity="one">"esok"</item>
         <item msgid="2973062968038355991" quantity="other">"dalam <ns1:g id="COUNT">%d</ns1:g> hari"</item>
-    </plurals><plurals name="joda_time_android_abbrev_num_days_ago">
-        <item msgid="8463161711492680309" quantity="one">"semalam"</item>
-        <item msgid="3453342639616481191" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> hari yang lalu"</item>
     </plurals><plurals name="joda_time_android_duration_minutes">
         <item msgid="4915414002546085617" quantity="one">"1 minit"</item>
         <item msgid="3165187169224908775" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> minit"</item>
     </plurals><plurals name="joda_time_android_abbrev_in_num_minutes">
         <item msgid="562786149928284878" quantity="one">"dalam 1 minit"</item>
         <item msgid="4216113292706568726" quantity="other">"dalam <ns1:g id="COUNT">%d</ns1:g> minit"</item>
+    </plurals><plurals name="joda_time_android_abbrev_num_days_ago">
+        <item msgid="8463161711492680309" quantity="one">"semalam"</item>
+        <item msgid="3453342639616481191" quantity="other">"<ns1:g id="COUNT">%d</ns1:g> hari yang lalu"</item>
     </plurals><plurals name="joda_time_android_abbrev_in_num_seconds">
         <item msgid="5842225370795066299" quantity="one">"dalam 1 saat"</item>
         <item msgid="5495880108825805108" quantity="other">"dalam <ns1:g id="COUNT">%d</ns1:g> saat"</item>

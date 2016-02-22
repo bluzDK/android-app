@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -24,17 +25,26 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import io.particle.android.sdk.cloud.ParticleCloud;
+import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
+import io.particle.android.sdk.utils.Async;
+import io.particle.android.sdk.utils.Toaster;
+
+import java.io.IOException;
 import java.util.UUID;
 
+import com.banc.BLEManagement.BLEDeviceInfo;
 import com.banc.BLEManagement.BLEDeviceInfoList;
 import com.banc.BLEManagement.BLEEvent;
 
 public class BLESelection extends Activity {
 	
 	public final static String DEVICE_MESSAGE = "com.banclabs.gloveapp.DeviceAddress";
-	
-	private ServiceManager sManager;	
+
+	static private ServiceManager sManager;
+	static BLEDeviceInfoList currentDevices;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -129,13 +139,39 @@ public class BLESelection extends Activity {
 	public void scanButtonPressed(View view) {
 		// Do something in response to button
 		Log.d("Clicked", "Clicked");
+		Button scanButton = (Button)findViewById(R.id.scanButton);
+
+		if (scanButton.getText() == "Stop") {
+			Message msg = new Message();
+			Bundle b = new Bundle();
+			b.putInt("info", BLEService.STOP_DISCOVERY);
+			msg.setData(b);
+			try {
+				sManager.send(msg);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+			scanButton.setText("Scan");
+		} else {
+			Message msg = new Message();
+			Bundle b = new Bundle();
+			b.putInt("info", BLEService.START_DISCOVERY);
+			msg.setData(b);
+			try {
+				sManager.send(msg);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+			scanButton.setText("Stop");
+		}
 
 	}
 	
 	Intent intent;
 	private void updateTable(BLEDeviceInfoList devices) 
 	{
-		Log.d("GloveSelection", "Updating UI Table with " + devices.GetCount() + " devices");
+
+		currentDevices = devices;
 		ListView list = (ListView)findViewById(R.id.listView1);
 		// Getting adapter by passing xml data ArrayList
         DeviceAdapter adapter=new DeviceAdapter(this, devices);
@@ -143,34 +179,35 @@ public class BLESelection extends Activity {
         
  
         // Click event for single list row
-        list.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				android.widget.RelativeLayout item = (android.widget.RelativeLayout)view;
-//				TextView addressTextView = (TextView)item.findViewById(R.id.deviceAddress);
-				TextView nameTextView = (TextView)item.findViewById(R.id.deviceName);
-//				String address = addressTextView.getText().toString();
-				String address = "";
-				String deviceName = nameTextView.getText().toString();
-				Log.d("DEBUG", "User selected " + address);
-				Message msg = new Message();
-				Bundle b = new Bundle();
-				b.putInt("info", BLEService.CONNECT);
-				b.putString("address", address);
-				msg.setData(b);
-				try {
-					sManager.send(msg);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-				sManager.unbind();
-				intent.putExtra(DEVICE_MESSAGE, deviceName);
-				startActivity(intent);
-			}
-        
-        });
+//        list.setOnItemClickListener(new OnItemClickListener() {
+//
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, View view,
+//					int position, long id) {
+//				android.widget.RelativeLayout item = (android.widget.RelativeLayout)view;
+////				TextView addressTextView = (TextView)item.findViewById(R.id.deviceAddress);
+//				TextView nameTextView = (TextView)item.findViewById(R.id.deviceName);
+////				String address = addressTextView.getText().toString();
+//				BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
+//				String address = devInfo.GetMAC();
+//				String deviceName = nameTextView.getText().toString();
+//				Log.d("DEBUG", "User selected " + address);
+//				Message msg = new Message();
+//				Bundle b = new Bundle();
+//				b.putInt("info", BLEService.CONNECT);
+//				b.putString("address", address);
+//				msg.setData(b);
+//				try {
+//					sManager.send(msg);
+//				} catch (RemoteException e) {
+//					e.printStackTrace();
+//				}
+//				sManager.unbind();
+//				intent.putExtra(DEVICE_MESSAGE, deviceName);
+//				startActivity(intent);
+//			}
+//
+//        });
 	}
 	
 	private class HandlerExtension extends Handler {
@@ -183,7 +220,7 @@ public class BLESelection extends Activity {
 			{
 				//this means it is a BLEEvent from the service
 				BLEEvent event = (BLEEvent)msg.obj;
-				if (event.BLEEventType == BLEEvent.EVENT_UPDATE)
+				if (event.BLEEventType == BLEEvent.EVENT_UPDATE || event.BLEEventType == BLEEvent.EVENT_DEVICE_STATE_CHANGE)
 				{
 					BLEDeviceInfoList devices = (BLEDeviceInfoList)event.Contents;
 					updateTable(devices);
@@ -207,4 +244,60 @@ public class BLESelection extends Activity {
 			msg.recycle();
 		}		
 	}
+
+	public OnClickListener connectButtonClicked = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			int position = (Integer) v.getTag();
+			Log.d("DEBUG","Clicked Connect Button at Position: " + position);
+			BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
+			String address = devInfo.GetMAC();
+			Log.d("DEBUG", "User selected " + address);
+			Message msg = new Message();
+			Bundle b = new Bundle();
+			if (devInfo.State == BLEDeviceInfo.STATE_CONNECTED) {
+				b.putInt("info", BLEService.DISCONNECT);
+			} else {
+				b.putInt("info", BLEService.CONNECT);
+			}
+			b.putString("address", address);
+			msg.setData(b);
+			try {
+				sManager.send(msg);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+	};
+
+	public OnClickListener claimButtonClicked = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			int position = (Integer) v.getTag();
+			Log.d("DEBUG","Clicked Claim Button at Position: " + position);
+			final BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
+			Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
+				@Override
+				public Object callApi(ParticleCloud sparkCloud) throws ParticleCloudException, IOException {
+					ParticleCloudSDK.getCloud().claimDevice(devInfo.GetCloudID());
+					return 1;
+				}
+
+				@Override
+				public void onSuccess(Object value) {
+					Log.d("Device Claimed", "");
+					devInfo.SetClaimed(true);
+					Toaster.s(BLESelection.this, "Claimed!");
+					updateTable(currentDevices);
+				}
+
+				@Override
+				public void onFailure(ParticleCloudException e) {
+					Log.d("Device Not Claimed", "");
+					Toaster.s(BLESelection.this, "Error Claiming Device!");
+				}
+			});
+		}
+	};
+
 }

@@ -72,6 +72,13 @@ public class ParticleLoginDisplay extends Activity {
             public void onSuccess(Object value) {
                 Log.d("Logging in", "succeeded");
                 Toaster.s(ParticleLoginDisplay.this, "Logged in!");
+                try {
+                    ParticleCloudSDK.getCloud().getDevices();
+                }
+                catch (Exception ex) {
+                    Log.d("ParticleLoginDisplay", "Received error when getting devices");
+                    ex.printStackTrace();
+                }
             }
 
             @Override
