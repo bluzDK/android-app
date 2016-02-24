@@ -3,10 +3,6 @@
     package="com.banc.sparkle_gateway"
     android:versionCode="1"
     android:versionName="1.0" >
-
-    <uses-sdk
-        android:minSdkVersion="18"
-        android:targetSdkVersion="18" />
     
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -17,6 +13,9 @@
         android:icon="@drawable/bluz_icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <!-- Activities -->
+g
         <activity
             android:name="com.banc.sparkle_gateway.BLESelection"
             android:label="@string/app_name"
@@ -27,9 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service android:name="com.banc.sparkle_gateway.BLEService" >
-        </service>
 
         <activity
             android:name="com.banc.sparkle_gateway.BLEDisplay"
@@ -42,6 +38,11 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
         </activity>
+
+        <!-- Services -->
+
+        <service android:name="com.banc.sparkle_gateway.BLEService" >
+        </service>
 
     </application>
 
