@@ -56,12 +56,18 @@ public class ParticleSocket {
 		new Retrievedata().execute(params);
 	}
 	public void Disconnect() throws UnknownHostException, IOException {
-		inputStream.close();
-		outputStream.close();
-		socket.close();
-		inputStream = null;
-		outputStream = null;
-		socket = null;
+		if (inputStream != null) {
+            inputStream.close();
+            inputStream = null;
+        }
+        if (outputStream != null) {
+            outputStream.close();
+            outputStream = null;
+        }
+        if (socket != null) {
+            socket.close();
+            socket = null;
+        }
 	}
 	public void Write(byte[] data) throws IOException {
 //		Log.d("SparkleCloudInterface", "When writing, are we connected: " + Boolean.toString(socket.isConnected()));
