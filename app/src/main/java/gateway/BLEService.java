@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -15,29 +14,19 @@ import BLEManagement.BLEEvent;
 import BLEManagement.BLEManager;
 
 public class BLEService extends AbstractService implements Observer {
+    private BLEManager bleManager;
+
     final public static int CONNECT = 2;
     final public static int DISCONNECT = 3;
     final public static int START_DISCOVERY = 4;
     final public static int STOP_DISCOVERY = 5;
-    AudioManager audio;
-    private BLEManager bleManager;
+
     private int MY_DATA_CHECK_CODE = 0;
+
     private boolean askedSMS = false;
     private boolean commandMode = false;
 
-    static public void DeviceInfoChanged() {
-        BLEEvent event = new BLEEvent();
-        event.Contents = BLEManager.GetList();
-        event.BLEEventType = BLEEvent.EVENT_DEVICE_STATE_CHANGE;
-        event.State = 0;
-        event.DeviceInfo = null;
-        Message msg = Message.obtain(null, 2);
-        Bundle b = new Bundle();
-        b.putInt("BLEEventType", event.BLEEventType);
-        msg.setData(b);
-        msg.obj = event;
-        send(msg);
-    }
+    AudioManager audio;
 
     @Override
     public void onStartService() {
@@ -54,12 +43,13 @@ public class BLEService extends AbstractService implements Observer {
     @Override
     public void onReceiveMessage(Message msg) {
         // TODO Auto-generated method stub
-        Log.d("SparkLEService", "Received message");
+        //// Log.d("SparkLEService", "Received message");
         String address;
         try {
             int info = msg.getData().getInt("info");
-            Log.d("SparkLEService", "Received message: " + info);
-            switch (info) {
+            //// Log.d("SparkLEService", "Received message: " + info);
+            switch (info)
+            {
 //			case GET_INFO:
 //				BLEEvent event = new BLEEvent();
 //				event.BLEEventType = BLEEvent.EVENT_UPDATE;
@@ -72,9 +62,9 @@ public class BLEService extends AbstractService implements Observer {
                     while (!bleManager.isInitialized(address)) {
                         Thread.sleep(100);
                     }
-                    Log.d("BLEService", "We are now connected and initialized!");
+                    //// Log.d("BLEService", "We are now connected and initialized!");
 //				Thread.sleep(2000);
-//				Log.d("BLEService", "Done Waiting 2 seconds");
+//				// Log.d("BLEService", "Done Waiting 2 seconds");
 //				sparkSocket.Connect();
                     //bleManager.send(new byte[]{0x55});
 //				readerThread = new ReaderThread();
@@ -86,22 +76,24 @@ public class BLEService extends AbstractService implements Observer {
                     break;
                 case DISCONNECT:
                     //String address = msg.getData().getString("address");
-                    Log.d("SparkLEService", "Disconnecting BLE");
+                    //// Log.d("SparkLEService", "Disconnecting BLE");
                     address = msg.getData().getString("address");
                     BLEDeviceInfo devInfo = bleManager.GetBLEDeviceInfoByAddress(address);
                     bleManager.disconnect(address);
                     break;
                 case START_DISCOVERY:
-                    Log.d("SparkLEService", "Starting Discovery");
+                    //// Log.d("SparkLEService", "Starting Discovery");
                     bleManager.start();
                     break;
                 case STOP_DISCOVERY:
-                    Log.d("SparkLEService", "Stopping Discovery");
+                    //// Log.d("SparkLEService", "Stopping Discovery");
                     bleManager.stop();
                     break;
 
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             ex.printStackTrace();
         }
     }
@@ -109,12 +101,13 @@ public class BLEService extends AbstractService implements Observer {
     @Override
     public void update(Observable observable, Object data) {
         // TODO Auto-generated method stub
-//		Log.d("SparkLEServices", "Received event from BLEManager");
-        BLEEvent event = (BLEEvent) data;
+//		// Log.d("SparkLEServices", "Received event from BLEManager");
+        BLEEvent event = (BLEEvent)data;
         if (event.DeviceInfo == null) {
-            Log.d("WTF!!!", "devInfo is null!");
+            // // Log.d("WTF!!!", "devInfo is null!");
         }
-        switch (event.BLEEventType) {
+        switch (event.BLEEventType)
+        {
             case BLEEvent.EVENT_UPDATE:
                 updateUI(event);
                 break;
@@ -123,25 +116,27 @@ public class BLEService extends AbstractService implements Observer {
                 updateUI(event);
                 break;
             case BLEEvent.EVENT_RX_DATA:
-                Log.d("BLEService", "Calling devInfo processData");
+                //// Log.d("BLEService", "Calling devInfo processData");
                 event.DeviceInfo.processData((byte[]) event.Contents);
                 break;
         }
     }
 
-    private void handleNewState(final BLEDeviceInfo devInfo, int newState) {
-        switch (newState) {
+    private void handleNewState(final BLEDeviceInfo devInfo, int newState)
+    {
+        switch (newState)
+        {
             case BLEDeviceInfo.STATE_DISCONNECTED:
-                Log.d("BLEService", "Handling BLE disconnection");
+                //// Log.d("BLEService", "Handling BLE disconnection");
                 devInfo.disconnect();
                 break;
             case BLEDeviceInfo.STATE_CONNECTED:
-                Log.d("BLEService", "Starting timer for Get ID!!");
+                //// Log.d("BLEService", "Starting timer for Get ID!!");
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.postDelayed(new Runnable() {
 
                     public void run() {
-                        Log.d("BLEService", "Running Get ID!!");
+                        //// Log.d("BLEService", "Running Get ID!!");
                         devInfo.PollParticleId();
                     }
                 }, 22000);
@@ -150,6 +145,20 @@ public class BLEService extends AbstractService implements Observer {
     }
 
     private void updateUI(BLEEvent event) {
+        Message msg = Message.obtain(null, 2);
+        Bundle b = new Bundle();
+        b.putInt("BLEEventType", event.BLEEventType);
+        msg.setData(b);
+        msg.obj = event;
+        send(msg);
+    }
+
+    static public void DeviceInfoChanged() {
+        BLEEvent event = new BLEEvent();
+        event.Contents = BLEManager.GetList();
+        event.BLEEventType = BLEEvent.EVENT_DEVICE_STATE_CHANGE;
+        event.State = 0;
+        event.DeviceInfo = null;
         Message msg = Message.obtain(null, 2);
         Bundle b = new Bundle();
         b.putInt("BLEEventType", event.BLEEventType);

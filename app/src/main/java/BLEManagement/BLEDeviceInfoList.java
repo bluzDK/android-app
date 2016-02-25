@@ -4,36 +4,39 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-
 public class BLEDeviceInfoList {
 
-    private final List<BLEDeviceInfo> bleDevices;
+    private List<BLEDeviceInfo> bleDevices;
 
-    public BLEDeviceInfoList() {
+    public BLEDeviceInfoList()
+    {
         bleDevices = new ArrayList<BLEDeviceInfo>();
     }
 
-    public void InsertOrUpdate(BLEDeviceInfo bleDevice) {
+    public void InsertOrUpdate(BLEDeviceInfo bleDevice)
+    {
         Iterator<BLEDeviceInfo> deviceIter = bleDevices.iterator();
         boolean found = false;
-        while (deviceIter.hasNext()) {
+        while(deviceIter.hasNext()){
             BLEDeviceInfo existingBleDevice = deviceIter.next();
-            if (existingBleDevice.GetMAC().equalsIgnoreCase(bleDevice.GetMAC())) {
+            if (existingBleDevice.GetMAC().equalsIgnoreCase(bleDevice.GetMAC()))
+            {
                 found = true;
                 existingBleDevice.UpdateRSSI(bleDevice.GetRSSI());
                 break;
             }
         }
-        if (!found) {
+        if (!found)
+        {
             bleDevices.add(bleDevice);
         }
     }
-
-    public BLEDeviceInfo GetBLEDeviceInfo(int index) {
+    public BLEDeviceInfo GetBLEDeviceInfo(int index)
+    {
         return bleDevices.get(index);
     }
-
-    public BLEDeviceInfo GetBLEDeviceInfoByAddress(String address) {
+    public BLEDeviceInfo GetBLEDeviceInfoByAddress(String address)
+    {
         for (BLEDeviceInfo b : bleDevices) {
             if (b.GetMAC() == address) {
                 return b;
@@ -42,18 +45,21 @@ public class BLEDeviceInfoList {
         return null;
     }
 
-    public int GetCount() {
+    public int GetCount()
+    {
         return bleDevices.size();
     }
 
-    public BLEDeviceInfoList MergeAndTakeUnique(BLEDeviceInfoList newDevices) {
+    public BLEDeviceInfoList MergeAndTakeUnique(BLEDeviceInfoList newDevices)
+    {
         BLEDeviceInfoList mergedOverDevice = new BLEDeviceInfoList();
 
         Iterator<BLEDeviceInfo> deviceIter = newDevices.bleDevices.iterator();
         boolean found = false;
-        while (deviceIter.hasNext()) {
+        while(deviceIter.hasNext()) {
             BLEDeviceInfo newBleDevice = deviceIter.next();
-            if (!this.ContainsByAddress(newBleDevice)) {
+            if (!this.ContainsByAddress(newBleDevice))
+            {
                 mergedOverDevice.bleDevices.add(newBleDevice);
             }
         }
@@ -61,12 +67,14 @@ public class BLEDeviceInfoList {
         return mergedOverDevice;
     }
 
-    private boolean ContainsByAddress(BLEDeviceInfo bleDevice) {
+    private boolean ContainsByAddress(BLEDeviceInfo bleDevice)
+    {
         Iterator<BLEDeviceInfo> deviceIter = bleDevices.iterator();
         boolean found = false;
-        while (deviceIter.hasNext()) {
+        while(deviceIter.hasNext()) {
             BLEDeviceInfo existingBleDevice = deviceIter.next();
-            if (existingBleDevice.GetMAC().equalsIgnoreCase(bleDevice.GetMAC())) {
+            if (existingBleDevice.GetMAC().equalsIgnoreCase(bleDevice.GetMAC()))
+            {
                 found = true;
                 break;
             }

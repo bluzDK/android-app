@@ -13,14 +13,27 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-class ServiceManager {
-    final public static int SERVICE_BOUND = 10;
-    private final Class<? extends AbstractService> mServiceClass;
-    private final Context mActivity;
-    private final Messenger mMessenger = new Messenger(new IncomingHandler());
+public class ServiceManager {
+    private Class<? extends AbstractService> mServiceClass;
+    private Context mActivity;
     private boolean mIsBound;
     private Messenger mService = null;
-    private final ServiceConnection mConnection = new ServiceConnection() {
+    private Handler mIncomingHandler = null;
+    private final Messenger mMessenger = new Messenger(new IncomingHandler());
+
+    final public static int SERVICE_BOUND = 10;
+
+    private class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (mIncomingHandler != null) {
+                //Log.i("ServiceHandler", "Incoming message. Passing to handler: "+msg);
+                mIncomingHandler.handleMessage(msg);
+            }
+        }
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
 
@@ -42,7 +55,6 @@ class ServiceManager {
             Log.i("ServiceHandler", "Disconnected.");
         }
     };
-    private Handler mIncomingHandler = null;
 
     public ServiceManager(Context context, Class<? extends AbstractService> serviceClass, Handler incomingHandler) {
         this.mActivity = context;
@@ -125,16 +137,6 @@ class ServiceManager {
             mIsBound = false;
             //textStatus.setText("Unbinding.");
             Log.i("ServiceHandler", "Unbinding.");
-        }
-    }
-
-    private class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            if (mIncomingHandler != null) {
-                //Log.i("ServiceHandler", "Incoming message. Passing to handler: "+msg);
-                mIncomingHandler.handleMessage(msg);
-            }
         }
     }
 }

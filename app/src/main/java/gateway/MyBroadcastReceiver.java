@@ -8,7 +8,7 @@ import android.util.Log;
 public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("DEBUG", "Got the reboot command, starting foneRino");
+        // Log.d("DEBUG", "Got the reboot command, starting foneRino");
         Intent startServiceIntent = new Intent(context, BLEService.class);
         context.startService(startServiceIntent);
     }

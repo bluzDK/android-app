@@ -1,6 +1,5 @@
 package gateway;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -22,8 +20,8 @@ public class BLEDisplay extends Activity {
 
     private ServiceManager sManager;
     private String address;
-    private TextView mainTitle;
-    private String name;
+    TextView mainTitle;
+    String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +31,7 @@ public class BLEDisplay extends Activity {
         Intent intent = getIntent();
         name = intent.getStringExtra(BLESelection.DEVICE_MESSAGE);
 
-        mainTitle = (TextView) this.findViewById(R.id.textView1);
+        mainTitle = (TextView)this.findViewById(R.id.textView1);
         mainTitle.setTextColor(Color.GREEN);
         mainTitle.setText("You are connected to: " + name);
         mainTitle.setTypeface(null, Typeface.BOLD);
@@ -47,12 +45,11 @@ public class BLEDisplay extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();  // Always call the superclass method first
 
-        Log.d("GloveDisplay", "Disconnecting from BLE device " + address);
+        // Log.d("GloveDisplay", "Disconnecting from BLE device " + address);
         Message msg = new Message();
         Bundle b = new Bundle();
         b.putInt("info", BLEService.DISCONNECT);
@@ -72,16 +69,17 @@ public class BLEDisplay extends Activity {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.d("DEBUG", "Received Message in UI");
+            // Log.d("DEBUG", "Received Message in UI");
             int type = msg.getData().getInt("BLEEventType", -1);
 
             if (type != -1) {
-                Log.d("BLEDisplay", "Received BLEEvent in UI");
+                // Log.d("BLEDisplay", "Received BLEEvent in UI");
                 //this means it is a BLEEvent from the service
                 BLEEvent event = (BLEEvent) msg.obj;
                 if (event.BLEEventType == BLEEvent.EVENT_DEVICE_STATE_CHANGE) {
                     int newState = event.State;
-                    if (newState == BLEDeviceInfo.STATE_DISCONNECTED) {
+                    if (newState == BLEDeviceInfo.STATE_DISCONNECTED)
+                    {
                         mainTitle.setTextColor(Color.RED);
                         mainTitle.setText("You are disconnected from: " + name);
                     }

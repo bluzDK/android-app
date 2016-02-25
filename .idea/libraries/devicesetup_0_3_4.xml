@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="devicesetup-0.3.4">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/io.particle/devicesetup/0.3.4/jars/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/io.particle/devicesetup/0.3.4/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.particle/devicesetup/0.3.4/a2330d89bbb42fbe688d38fbc2ba54598a5e9eb6/devicesetup-0.3.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

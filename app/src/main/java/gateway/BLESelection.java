@@ -1,127 +1,81 @@
 package gateway;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.banc.gateway.R;
 
 import java.io.IOException;
+import java.util.List;
 
 import BLEManagement.BLEDeviceInfo;
 import BLEManagement.BLEDeviceInfoList;
 import BLEManagement.BLEEvent;
-import BLEManagement.Utilities;
 import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
+import io.particle.android.sdk.cloud.ParticleDevice;
 import io.particle.android.sdk.utils.Async;
 import io.particle.android.sdk.utils.Toaster;
 
 
-public class BLESelection extends AppCompatActivity {
+public class BLESelection extends Activity {
 
     public final static String DEVICE_MESSAGE = "com.banclabs.gloveapp.DeviceAddress";
+    private static final String TAG = "BLESelection" ;
 
     static private ServiceManager sManager;
-    private static BLEDeviceInfoList currentDevices;
-    public final OnClickListener connectButtonClicked = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            int position = (Integer) v.getTag();
-            Log.d("DEBUG", "Clicked Connect Button at Position: " + position);
-            BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
-            String address = devInfo.GetMAC();
-            Log.d("DEBUG", "User selected " + address);
-            Message msg = new Message();
-            Bundle b = new Bundle();
-            if (devInfo.State == BLEDeviceInfo.STATE_CONNECTED) {
-                b.putInt("info", BLEService.DISCONNECT);
-            } else {
-                b.putInt("info", BLEService.CONNECT);
-            }
-            b.putString("address", address);
-            msg.setData(b);
-            try {
-                sManager.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-    };
-    public final OnClickListener claimButtonClicked = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            int position = (Integer) v.getTag();
-            Log.d("DEBUG", "Clicked Claim Button at Position: " + position);
-            final BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
-            Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
-                @Override
-                public Object callApi(ParticleCloud sparkCloud) throws ParticleCloudException, IOException {
-                    ParticleCloudSDK.getCloud().claimDevice(devInfo.GetCloudID());
-                    return 1;
-                }
-
-                @Override
-                public void onSuccess(Object value) {
-                    Log.d("Device Claimed", "");
-                    devInfo.SetClaimed();
-                    Toaster.s(BLESelection.this, "Claimed!");
-                    updateTable(currentDevices);
-                }
-
-                @Override
-                public void onFailure(ParticleCloudException e) {
-                    Log.d("Device Not Claimed", "");
-                    Toaster.s(BLESelection.this, "Error Claiming Device!");
-                }
-            });
-        }
-    };
-    private Utilities utils;
-    private Intent intent;
+    static BLEDeviceInfoList currentDevices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ble_list);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.activity_ble_list, null);
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
 
-        // Find out whether device even supports Bluetooth
-        utils = new Utilities();
-        boolean ble = utils.checkForBluetooth();
-        if (!ble) {
-            Toast.makeText(this, "Bluetooth is either not supported on this device, " +
-                    "or is turned off", Toast.LENGTH_LONG).show();
-        }
         ParticleCloudSDK.init(this);
 
-        sManager = new ServiceManager(this, BLEService.class, new HandlerExtension());
+        this.sManager = new ServiceManager(this, BLEService.class, new HandlerExtension());
         if (!sManager.isRunning()) {
-            Log.d("GloveSelection", "Service is not running. Starting!");
             sManager.start();
         }
+
+        // user is not logged in, so automagically display login thing
+        if (!ParticleCloudSDK.getCloud().isLoggedIn()) {
+            Intent intent = new Intent(this, ParticleLoginDisplay.class);
+            startActivityForResult(intent, 1);
+        }
+        else {
+            Button loginButton = (Button)findViewById(R.id.loginButton);
+            loginButton.setText("Logout");
+        }
+
+        FloatingActionButton fab = (FloatingActionButton)  view.findViewById(R.id.myFAB);
+        fab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Log.e(TAG, "FAB pressed");
+                Snackbar.make(v, "FAB Clicked", Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+
+
+
     }
 
     @Override
@@ -133,16 +87,9 @@ public class BLESelection extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        Log.d("GloveSelection", "Starting Glove Selection");
-        //always do this first
         super.onStart();
 
-        Button loginButton = (Button) findViewById(R.id.loginButton);
-        Button scanButton = (Button) findViewById(R.id.scanButton);
-
-        if (ParticleCloudSDK.getCloud().isLoggedIn()) {
-            loginButton.setText("Logout");
-        }
+        Button scanButton = (Button)findViewById(R.id.scanButton);
 
         sManager.bind();
         //tell the service to stop discovery
@@ -161,8 +108,6 @@ public class BLESelection extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        Log.d("GloveSelection", "Stopping Glove Selection");
-        //always do this first
         super.onStop();
 
         //tell the service to stop discovery
@@ -179,7 +124,6 @@ public class BLESelection extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        Log.d("GloveSelection", "Destroying Glove Selection");
         super.onDestroy();  // Always call the superclass method first
 
         sManager.stop();
@@ -187,22 +131,36 @@ public class BLESelection extends AppCompatActivity {
     }
 
     public void loginButtonPressed(View view) {
-        // Do something in response to button
-        Log.d("Clicked", "Clicked");
         if (ParticleCloudSDK.getCloud().isLoggedIn()) {
             ParticleCloudSDK.getCloud().logOut();
-            Button loginButton = (Button) findViewById(R.id.loginButton);
+            Button loginButton = (Button)findViewById(R.id.loginButton);
             loginButton.setText("Login");
         } else {
             Intent intent = new Intent(this, ParticleLoginDisplay.class);
-            startActivity(intent);
+            startActivityForResult(intent, 1);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                try {
+                    List<ParticleDevice> devices = ParticleCloudSDK.getCloud().getDevices();
+                    for (ParticleDevice device : devices) {
+                        // Log.d(TAG, device.getName());
+                    }
+                }
+                catch (ParticleCloudException ex) {
+                    Log.e("ParticleLoginDisplay", "Received error when getting devices");
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
     public void scanButtonPressed(View view) {
-        // Do something in response to button
-        Log.d("Clicked", "Clicked");
-        Button scanButton = (Button) findViewById(R.id.scanButton);
+        Button scanButton = (Button)findViewById(R.id.scanButton);
 
         if (scanButton.getText() == "Stop") {
             Message msg = new Message();
@@ -230,12 +188,13 @@ public class BLESelection extends AppCompatActivity {
 
     }
 
-    private void updateTable(BLEDeviceInfoList devices) {
-
+    Intent intent;
+    private void updateTable(BLEDeviceInfoList devices)
+    {
         currentDevices = devices;
-        ListView list = (ListView) findViewById(R.id.listView1);
+        ListView list = (ListView)findViewById(R.id.listView1);
         // Getting adapter by passing xml data ArrayList
-        DeviceAdapter adapter = new DeviceAdapter(this, devices);
+        DeviceAdapter adapter=new DeviceAdapter(this, devices);
         list.setAdapter(adapter);
 
 
@@ -252,7 +211,7 @@ public class BLESelection extends AppCompatActivity {
 //				BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
 //				String address = devInfo.GetMAC();
 //				String deviceName = nameTextView.getText().toString();
-//				Log.d("DEBUG", "User selected " + address);
+//				// Log.d("DEBUG", "User selected " + address);
 //				Message msg = new Message();
 //				Bundle b = new Bundle();
 //				b.putInt("info", BLEService.CONNECT);
@@ -277,17 +236,20 @@ public class BLESelection extends AppCompatActivity {
         public void handleMessage(Message msg) {
             int type = msg.getData().getInt("BLEEventType", -1);
 
-            if (type != -1) {
+            if (type != -1)
+            {
                 //this means it is a BLEEvent from the service
-                BLEEvent event = (BLEEvent) msg.obj;
-                if (event.BLEEventType == BLEEvent.EVENT_UPDATE || event.BLEEventType == BLEEvent.EVENT_DEVICE_STATE_CHANGE) {
-                    BLEDeviceInfoList devices = (BLEDeviceInfoList) event.Contents;
+                BLEEvent event = (BLEEvent)msg.obj;
+                if (event.BLEEventType == BLEEvent.EVENT_UPDATE || event.BLEEventType == BLEEvent.EVENT_DEVICE_STATE_CHANGE)
+                {
+                    BLEDeviceInfoList devices = (BLEDeviceInfoList)event.Contents;
                     updateTable(devices);
                 }
             } else {
                 //otherwise, it is a message from the ServiceManager
                 type = msg.getData().getInt("info", -1);
-                if (type == ServiceManager.SERVICE_BOUND) {
+                if (type == ServiceManager.SERVICE_BOUND)
+                {
                     Message discoverMessage = new Message();
                     Bundle b = new Bundle();
                     b.putInt("info", BLEService.START_DISCOVERY);
@@ -299,8 +261,63 @@ public class BLESelection extends AppCompatActivity {
                     }
                 }
             }
-            // msg.recycle();
+            //msg.recycle();
         }
     }
+
+    public OnClickListener connectButtonClicked = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            int position = (Integer) v.getTag();
+            // Log.d("DEBUG","Clicked Connect Button at Position: " + position);
+            BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
+            String address = devInfo.GetMAC();
+            // Log.d("DEBUG", "User selected " + address);
+            Message msg = new Message();
+            Bundle b = new Bundle();
+            if (devInfo.State == BLEDeviceInfo.STATE_CONNECTED) {
+                b.putInt("info", BLEService.DISCONNECT);
+            } else {
+                b.putInt("info", BLEService.CONNECT);
+            }
+            b.putString("address", address);
+            msg.setData(b);
+            try {
+                sManager.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    public OnClickListener claimButtonClicked = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            int position = (Integer) v.getTag();
+            // Log.d("DEBUG","Clicked Claim Button at Position: " + position);
+            final BLEDeviceInfo devInfo = currentDevices.GetBLEDeviceInfo(position);
+            Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
+                @Override
+                public Object callApi(ParticleCloud sparkCloud) throws ParticleCloudException, IOException {
+                    ParticleCloudSDK.getCloud().claimDevice(devInfo.GetCloudID());
+                    return 1;
+                }
+
+                @Override
+                public void onSuccess(Object value) {
+                    // Log.d("Device Claimed", "");
+                    devInfo.SetClaimed(true);
+                    Toaster.s(BLESelection.this, "Claimed!");
+                    updateTable(currentDevices);
+                }
+
+                @Override
+                public void onFailure(ParticleCloudException e) {
+                    // Log.d("Device Not Claimed", "");
+                    Toaster.s(BLESelection.this, "Error Claiming Device!");
+                }
+            });
+        }
+    };
 
 }

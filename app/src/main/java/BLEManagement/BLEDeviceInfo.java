@@ -3,7 +3,6 @@ package BLEManagement;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -19,26 +18,21 @@ public class BLEDeviceInfo implements Runnable {
     final public static int STATE_DISCONNECTED = 2;
     final public static int STATE_CONNECTING = 3;
     final public static int STATE_CONNECTED = 4;
-    private final ParticleSocket particleSocket;
-    private final BluetoothDevice bleDevice;
+
     public int State;
+    public ParticleSocket particleSocket;
     public BluetoothGatt mBluetoothGatt;
     public BluetoothGattService mBluetoothGattService;
-    //internal flags so the manager can keep track of successful transmissions
-    boolean transmissionDone = false;
+
+    private BluetoothDevice bleDevice;
     private int rssi;
     private String cloudName;
     private String cloudId;
     private Boolean isClaimed;
-    //buffers for data
-    private byte[] dlBuffer;
-    private byte[] ulBuffer;
-    private int ulBufferLength;
-    //internal var to keep track of last service
-    private byte lastService = 0x00;
-    private boolean Running = false;
 
-    public BLEDeviceInfo(BluetoothDevice device, final int rssi) {
+
+    public BLEDeviceInfo(BluetoothDevice device, final int rssi)
+    {
         this.bleDevice = device;
         this.rssi = rssi;
         cloudName = "";
@@ -49,38 +43,30 @@ public class BLEDeviceInfo implements Runnable {
         ulBufferLength = 0;
     }
 
-    public void UpdateRSSI(int newRSSI) {
+    public void UpdateRSSI(int newRSSI)
+    {
         rssi = newRSSI;
     }
 
-    public int GetRSSI() {
-        return rssi;
-    }
+    public int GetRSSI() { return rssi; }
+    public String GetName() { return bleDevice.getName(); }
+    public String GetMAC() { return bleDevice.getAddress(); }
+    public String GetCloudID() { return cloudId; }
+    public String GetCloudName() { return cloudName; }
+    public boolean IsClaimed() {return isClaimed; }
+    public void SetClaimed(boolean claimed) {isClaimed = claimed; }
 
-    public String GetName() {
-        return bleDevice.getName();
-    }
+    //buffers for data
+    byte[] dlBuffer, ulBuffer;
+    int ulBufferLength;
 
-    public String GetMAC() {
-        return bleDevice.getAddress();
-    }
+    //internal flags so the manager can keep track of successful transmissions
+    boolean transmissionDone = false;
 
-    public String GetCloudID() {
-        return cloudId;
-    }
+    //internal var to keep track of last service
+    byte lastService = 0x00;
 
-    public String GetCloudName() {
-        return cloudName;
-    }
-
-    public boolean IsClaimed() {
-        return isClaimed;
-    }
-
-    public void SetClaimed() {
-        isClaimed = true;
-    }
-
+    public boolean Running = false;
     @Override
     public void run() {
         Running = true;
@@ -90,10 +76,10 @@ public class BLEDeviceInfo implements Runnable {
             if (particleSocket.Connected()) {
                 try {
                     int bytesAvailable = particleSocket.Available();
-//					Log.d("BLEService", "Connected: " + Boolean.toString(sparkSocket.Connected()) + "  Bytes Available: " + bytesAvailable);
+//					// Log.d("BLEService", "Connected: " + Boolean.toString(sparkSocket.Connected()) + "  Bytes Available: " + bytesAvailable);
                     if (bytesAvailable > 0) {
                         dlBuffer = particleSocket.Read();
-//						Log.d("BLEService", "We read some bytes from SPark Cloud: " + dlBuffer.length);
+//						// Log.d("BLEService", "We read some bytes from SPark Cloud: " + dlBuffer.length);
                         byte[] header = {0x01, 0x00};
                         BLEManager.send(this, dlBuffer, header);
                     }
@@ -111,7 +97,8 @@ public class BLEDeviceInfo implements Runnable {
         }
     }
 
-    private void stop() {
+    public void stop()
+    {
         Running = false;
     }
 
@@ -136,28 +123,25 @@ public class BLEDeviceInfo implements Runnable {
 
     //Called when the SparkLE transmits data to us
     public synchronized void processData(byte[] data) {
-        Log.d("BLEService", "Got data of length " + data.length);
-        Log.d("BLEService", "Last Service " + Byte.toString(lastService));
-
         StringBuilder sb = new StringBuilder();
         for (byte b : data) {
             sb.append(String.format("%02X ", b));
         }
-//	    Log.d("BLEService", "Processing Data: " + sb.toString());
+//	    // Log.d("BLEService", "Processing Data: " + sb.toString());
 
         if (data[0] == 0x03 && data[1] == 0x04) {
             if (lastService == 0x01) {
                 try {
                     if (particleSocket.Connected()) {
-                        Log.d("BLEService", "Got a full buffer, attempting to send it up");
+                        // Log.d("BLEService", "Got a full buffer, attempting to send it up");
                         byte[] tmpBuffer = new byte[ulBufferLength];
                         System.arraycopy(ulBuffer, 0, tmpBuffer, 0, ulBufferLength);
-//        			Log.d("BLEService", "About to write this many bytes " + tmpBuffer.length);
+//        			// Log.d("BLEService", "About to write this many bytes " + tmpBuffer.length);
                         particleSocket.Write(tmpBuffer);
-//					Log.d("BLEManager", "Received this many bytes from BLE: " + tmpBuffer.length);
+//					// Log.d("BLEManager", "Received this many bytes from BLE: " + tmpBuffer.length);
                     } else {
                         try {
-                            Log.d("SparkLEService", "Not Connected. Attempting to connect to cloud");
+                            // Log.d("SparkLEService", "Not Connected. Attempting to connect to cloud");
                             particleSocket.Connect();
                             Thread rThread = new Thread(this);
                             //rThread.setUncaughtExceptionHandler(new ExceptionHandler());
@@ -176,7 +160,7 @@ public class BLEDeviceInfo implements Runnable {
                 for (int i = 0; i < ulBufferLength; i++) {
                     id.append(String.format("%02x", ulBuffer[i]));
                 }
-                Log.d("Device ID", id.toString());
+                // Log.d("Device ID", id.toString());
                 this.cloudId = id.toString();
                 Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Object>() {
                     @Override
@@ -186,15 +170,15 @@ public class BLEDeviceInfo implements Runnable {
 
                     @Override
                     public void onSuccess(Object value) {
-                        Log.d("Device Name Retreieved", (String) value);
-                        cloudName = (String) value;
+                        // Log.d("Device Name Retreieved", (String)value);
+                        cloudName = (String)value;
                         isClaimed = true;
                         BLEService.DeviceInfoChanged();
                     }
 
                     @Override
                     public void onFailure(ParticleCloudException e) {
-                        Log.d("Device is not claimed", "");
+                        // Log.d("Device is not claimed","");
                         isClaimed = false;
                         BLEService.DeviceInfoChanged();
                     }
@@ -212,8 +196,8 @@ public class BLEDeviceInfo implements Runnable {
                     headerBytes = 2;
                 }
                 //this is the first packaet in the stream. check the header
-                System.arraycopy(data, headerBytes, ulBuffer, ulBufferLength, data.length - headerBytes);
-                ulBufferLength += (data.length - headerBytes);
+                System.arraycopy(data, headerBytes, ulBuffer, ulBufferLength, data.length-headerBytes);
+                ulBufferLength += (data.length-headerBytes);
             } else {
                 System.arraycopy(data, 0, ulBuffer, ulBufferLength, data.length);
                 ulBufferLength += (data.length);

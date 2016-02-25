@@ -3,10 +3,10 @@ package gateway;
 import org.apache.http.util.ByteArrayBuffer;
 
 public class HexAsciiHelper {
-    private static final int PRINTABLE_ASCII_MIN = 0x20; // ' '
-    private static final int PRINTABLE_ASCII_MAX = 0x7E; // '~'
+    public static int PRINTABLE_ASCII_MIN = 0x20; // ' '
+    public static int PRINTABLE_ASCII_MAX = 0x7E; // '~'
 
-    private static boolean isPrintableAscii(int c) {
+    public static boolean isPrintableAscii(int c) {
         return c >= PRINTABLE_ASCII_MIN && c <= PRINTABLE_ASCII_MAX;
     }
 
