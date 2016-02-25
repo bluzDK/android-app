@@ -1,23 +1,24 @@
-package com.banc.BLEManagement;
+package BLEManagement;
 
 import android.bluetooth.BluetoothDevice;
 
 import java.util.UUID;
 
-import com.banc.sparkle_gateway.HexAsciiHelper;
+import gateway.HexAsciiHelper;
 
-public class BluetoothHelper {
-    public static String shortUuidFormat = "871e%04X-38ff-77b1-ed41-9fb3aa142db2";
-    public static String oldUuidFormat = "0000%04X-0000-1000-8000-00805f9b34fb";
+
+class BluetoothHelper {
+    private static final String shortUuidFormat = "871e%04X-38ff-77b1-ed41-9fb3aa142db2";
+    private static final String oldUuidFormat = "0000%04X-0000-1000-8000-00805f9b34fb";
 
     public static UUID sixteenBitUuid(long shortUuid) {
         assert shortUuid >= 0 && shortUuid <= 0xFFFF;
         return UUID.fromString(String.format(shortUuidFormat, shortUuid & 0xFFFF));
     }
-    
-    public static UUID sixteenBitUuidOld(long shortUuid) {
-        assert shortUuid >= 0 && shortUuid <= 0xFFFF;
-        return UUID.fromString(String.format(oldUuidFormat, shortUuid & 0xFFFF));
+
+    public static UUID sixteenBitUuidOld() {
+        assert (long) 0x2902 >= 0 && (long) 0x2902 <= 0xFFFF;
+        return UUID.fromString(String.format(oldUuidFormat, (long) 0x2902 & 0xFFFF));
     }
 
     public static String getDeviceInfoText(BluetoothDevice device, int rssi, byte[] scanRecord) {
@@ -39,7 +40,7 @@ public class BluetoothHelper {
             switch (scanRecord[i] & 0xFF) {
                 // https://www.bluetooth.org/en-us/specification/assigned-numbers/generic-access-profile
                 case 0x0A: // Tx Power
-                    output.append("\n  Tx Power: ").append(scanRecord[i+1]);
+                    output.append("\n  Tx Power: ").append(scanRecord[i + 1]);
                     break;
                 case 0xFF:
                     output.append("\n  Advertisement Data: ")

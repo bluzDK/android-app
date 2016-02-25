@@ -1,8 +1,11 @@
-package com.banc.sparkle_gateway;
+package gateway;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
+
+import com.banc.gateway.R;
+
 
 public class MainActivity extends Activity {
 
@@ -19,5 +22,5 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-    
+
 }

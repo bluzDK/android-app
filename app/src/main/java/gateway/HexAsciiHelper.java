@@ -1,21 +1,12 @@
-package com.banc.sparkle_gateway;
-
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+package gateway;
 
 import org.apache.http.util.ByteArrayBuffer;
 
-import java.util.regex.Pattern;
-
 public class HexAsciiHelper {
-    public static int PRINTABLE_ASCII_MIN = 0x20; // ' '
-    public static int PRINTABLE_ASCII_MAX = 0x7E; // '~'
+    private static final int PRINTABLE_ASCII_MIN = 0x20; // ' '
+    private static final int PRINTABLE_ASCII_MAX = 0x7E; // '~'
 
-    public static boolean isPrintableAscii(int c) {
+    private static boolean isPrintableAscii(int c) {
         return c >= PRINTABLE_ASCII_MIN && c <= PRINTABLE_ASCII_MAX;
     }
 
