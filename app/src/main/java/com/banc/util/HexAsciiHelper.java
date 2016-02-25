@@ -1,15 +1,6 @@
-package com.banc.sparkle_gateway;
-
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+package com.banc.util;
 
 import org.apache.http.util.ByteArrayBuffer;
-
-import java.util.regex.Pattern;
 
 public class HexAsciiHelper {
     public static int PRINTABLE_ASCII_MIN = 0x20; // ' '

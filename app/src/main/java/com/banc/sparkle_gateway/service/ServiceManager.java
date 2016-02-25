@@ -1,4 +1,4 @@
-package com.banc.sparkle_gateway;
+package com.banc.sparkle_gateway.service;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -19,17 +18,17 @@ public class ServiceManager {
 	private Context mActivity;
     private boolean mIsBound;
     private Messenger mService = null;
-    private Handler mIncomingHandler = null;
+    private static Handler sIncomingHandler = null;
     private final Messenger mMessenger = new Messenger(new IncomingHandler());
     
     final public static int SERVICE_BOUND = 10;
     
-    private class IncomingHandler extends Handler {
+    private static class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-        	if (mIncomingHandler != null) {
+        	if (sIncomingHandler != null) {
         		//Log.i("ServiceHandler", "Incoming message. Passing to handler: "+msg);
-        		mIncomingHandler.handleMessage(msg);
+        		sIncomingHandler.handleMessage(msg);
         	}
         }
     }
@@ -60,7 +59,7 @@ public class ServiceManager {
     public ServiceManager(Context context, Class<? extends AbstractService> serviceClass, Handler incomingHandler) {
     	this.mActivity = context;
     	this.mServiceClass = serviceClass;
-    	this.mIncomingHandler = incomingHandler;
+    	sIncomingHandler = incomingHandler;
     	if (isRunning()) {
     		doBindService();
     	}

@@ -1,6 +1,5 @@
-package com.banc.sparkle_gateway;
+package com.banc.sparkle_gateway.service;
 
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -9,10 +8,8 @@ import com.banc.BLEManagement.BLEEvent;
 import com.banc.BLEManagement.BLEManager;
 
 import android.media.AudioManager;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
-import android.content.Intent;
 import android.os.Message;
 import android.os.Looper;
 import android.util.Log;
@@ -69,7 +66,7 @@ public class BLEService extends AbstractService implements Observer {
 				Log.d("BLEService", "We are now connected and initialized!");				
 //				Thread.sleep(2000);
 //				Log.d("BLEService", "Done Waiting 2 seconds");
-//				sparkSocket.Connect();
+//				sparkSocket.connect();
 				//bleManager.send(new byte[]{0x55});
 //				readerThread = new ReaderThread();
 //				Thread rThread = new Thread(readerThread);

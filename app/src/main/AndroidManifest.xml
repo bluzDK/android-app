@@ -6,7 +6,10 @@
     
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 
     <application
         android:allowBackup="true"
@@ -17,7 +20,7 @@
         <!-- Activities -->
 g
         <activity
-            android:name="com.banc.sparkle_gateway.BLESelection"
+            android:name=".device_list.BLESelectionActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
             <intent-filter>
@@ -28,20 +31,16 @@ g
         </activity>
 
         <activity
-            android:name="com.banc.sparkle_gateway.BLEDisplay"
+            android:name=".login.ParticleLoginActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
-        </activity>
-
-        <activity
-            android:name="com.banc.sparkle_gateway.ParticleLoginDisplay"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:launchMode="singleInstance"
+            android:windowSoftInputMode="adjustResize|stateHidden">
         </activity>
 
         <!-- Services -->
 
-        <service android:name="com.banc.sparkle_gateway.BLEService" >
+        <service android:name=".service.BLEService" >
         </service>
 
     </application>

@@ -1,4 +1,4 @@
-package com.banc.sparkle_gateway;
+package com.banc.sparkle_gateway.service;
 
 import java.util.ArrayList;
 

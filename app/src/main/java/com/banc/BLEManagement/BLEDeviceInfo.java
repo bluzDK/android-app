@@ -5,8 +5,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
-import com.banc.sparkle_gateway.BLEService;
-import com.banc.sparkle_gateway.ParticleSocket;
+import com.banc.sparkle_gateway.service.BLEService;
 
 import java.io.IOException;
 
@@ -14,7 +13,6 @@ import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import io.particle.android.sdk.utils.Async;
-import io.particle.android.sdk.utils.Toaster;
 
 public class BLEDeviceInfo implements Runnable {
 	final public static int STATE_BLUETOOTH_OFF = 1;
@@ -76,12 +74,12 @@ public class BLEDeviceInfo implements Runnable {
 		// TODO Auto-generated method stub
 		while (Running) {
 
-			if (particleSocket.Connected()) {
+			if (particleSocket.isConnected()) {
 				try {
 					int bytesAvailable = particleSocket.Available();
-//					Log.d("BLEService", "Connected: " + Boolean.toString(sparkSocket.Connected()) + "  Bytes Available: " + bytesAvailable);
+//					Log.d("BLEService", "isConnected: " + Boolean.toString(sparkSocket.isConnected()) + "  Bytes Available: " + bytesAvailable);
 					if (bytesAvailable > 0) {
-						dlBuffer = particleSocket.Read();
+						dlBuffer = particleSocket.read();
 //						Log.d("BLEService", "We read some bytes from SPark Cloud: " + dlBuffer.length);
 						byte[] header = {0x01, 0x00};
 						BLEManager.send(this, dlBuffer, header);
@@ -114,7 +112,7 @@ public class BLEDeviceInfo implements Runnable {
 			e.printStackTrace();
 		}
 		try {
-			particleSocket.Disconnect();
+			particleSocket.disconnect();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -138,17 +136,17 @@ public class BLEDeviceInfo implements Runnable {
 		if (data[0] == 0x03 && data[1] == 0x04) {
 			if (lastService == 0x01) {
 				try {
-					if (particleSocket.Connected()) {
+					if (particleSocket.isConnected()) {
 						Log.d("BLEService", "Got a full buffer, attempting to send it up");
 						byte[] tmpBuffer = new byte[ulBufferLength];
 						System.arraycopy(ulBuffer, 0, tmpBuffer, 0, ulBufferLength);
 //        			Log.d("BLEService", "About to write this many bytes " + tmpBuffer.length);
-						particleSocket.Write(tmpBuffer);
+						particleSocket.write(tmpBuffer);
 //					Log.d("BLEManager", "Received this many bytes from BLE: " + tmpBuffer.length);
 					} else {
 						try {
-							Log.d("SparkLEService", "Not Connected. Attempting to connect to cloud");
-							particleSocket.Connect();
+							Log.d("SparkLEService", "Not isConnected. Attempting to connect to cloud");
+							particleSocket.connect();
 							Thread rThread = new Thread(this);
 							//rThread.setUncaughtExceptionHandler(new ExceptionHandler());
 							rThread.start();
