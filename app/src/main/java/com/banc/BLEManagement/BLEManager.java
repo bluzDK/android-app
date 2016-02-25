@@ -74,7 +74,7 @@ public class BLEManager extends Observable implements Observer {
 //        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        updateState(bluetoothAdapter.isEnabled() ? STATE_DISCONNECTED : STATE_BLUETOOTH_OFF);
         
-        scanner = new BLEScanner();
+        scanner = new BLEScanner(context);
 	}
 
     static public BLEDeviceInfoList GetList() {return scanner.newDevices;}
