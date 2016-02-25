@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="android.joda-2.9.0">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/net.danlew/android.joda/2.9.0/res" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/net.danlew/android.joda/2.9.0/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.danlew/android.joda/2.9.0/318a62637eabebe3a168f91cdb3948d5b01b9c94/android.joda-2.9.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
