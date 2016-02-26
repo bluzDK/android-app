@@ -211,6 +211,10 @@ public class BLESelectionActivity extends AppCompatActivity {
             int position = (Integer) v.getTag();
             Log.d("DEBUG", "Clicked connect Button at Position: " + position);
             BLEDeviceInfo devInfo = sCurrentDevices.GetBLEDeviceInfo(position);
+            if (devInfo.State == BLEDeviceInfo.STATE_CONNECTING) {
+                Log.d("DEBUG", "User selected STATE_CONNECTING");
+                return;
+            }
             String address = devInfo.GetMAC();
             Log.d("DEBUG", "User selected " + address);
             Message msg = new Message();

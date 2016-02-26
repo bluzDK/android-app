@@ -444,6 +444,7 @@ public class BLEManager extends Observable implements Observer {
         // parameter to false.
         devInfo.mBluetoothGatt = device.connectGatt(context, false, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
+        updateState(devInfo, BLEDeviceInfo.STATE_CONNECTING);
         return true;
     }
 

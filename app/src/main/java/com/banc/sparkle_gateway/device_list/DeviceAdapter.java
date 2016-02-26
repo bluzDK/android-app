@@ -52,6 +52,8 @@ public class DeviceAdapter extends BaseAdapter {
         connectButton.setText(R.string.connect);
         if (device.State == BLEDeviceInfo.STATE_CONNECTED) {
             connectButton.setText(R.string.disconnect);
+        } else if (device.State == BLEDeviceInfo.STATE_CONNECTING) {
+            connectButton.setText(R.string.connecting);
         }
 
         Log.d("DEBUG", "Adding device with name " + device.GetName());
