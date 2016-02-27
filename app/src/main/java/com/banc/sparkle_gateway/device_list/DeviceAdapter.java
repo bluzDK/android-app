@@ -1,6 +1,7 @@
 package com.banc.sparkle_gateway.device_list;
 
 import android.app.Activity;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -68,6 +69,12 @@ public class DeviceAdapter extends BaseAdapter {
             claimButton.setVisibility(View.VISIBLE);
         } else {
             claimButton.setVisibility(View.INVISIBLE);
+        }
+
+        if (position % 2 == 0) {
+            convertView.setBackgroundColor(ContextCompat.getColor(convertView.getContext(), R.color.grey_light_mid));
+        } else {
+            convertView.setBackgroundColor(ContextCompat.getColor(convertView.getContext(), R.color.grey_light));
         }
 
         return convertView;

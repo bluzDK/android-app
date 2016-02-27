@@ -15,6 +15,46 @@
         android:src="@drawable/bluz_icon"/>
 
     <LinearLayout
+        android:id="@+id/ll_buttons_wrapper"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_alignParentRight="true"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/connectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_weight="0.5"
+            android:layout_margin="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:background="@drawable/round_small_bg"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:focusable="false"
+            android:text="Connect"/>
+
+        <Button
+            android:id="@+id/claimButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_weight=".5"
+            android:layout_margin="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:background="@drawable/round_small_bg"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:focusable="false"
+            android:text="Claim"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_toRightOf="@+id/iv_logo"
         android:layout_toLeftOf="@+id/ll_buttons_wrapper"
         android:orientation="vertical"
@@ -56,36 +96,6 @@
             android:textSize="12sp"
             android:text="b1e200000123456789abcdef" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_buttons_wrapper"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_alignParentRight="true"
-        android:weightSum="1">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:text="Connect"
-            android:id="@+id/connectButton"
-            android:textSize="12sp"
-            android:layout_weight="0.5"
-            android:textColor="@color/white"
-            android:focusable="false"/>
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:text="Claim"
-            android:id="@+id/claimButton"
-            android:textSize="12sp"
-            android:layout_weight=".5"
-            android:textColor="@color/white"
-            android:focusable="false"/>
     </LinearLayout>
 
     <View

@@ -10,6 +10,9 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -72,16 +75,38 @@ public class BLESelectionActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.getItem(0);
+        if (ParticleCloudSDK.getCloud().isLoggedIn()) {
+            item.setTitle(R.string.logout);
+        } else {
+            item.setTitle(R.string.login);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_login) {
+            loginButtonPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onStart() {
         Log.d("GloveSelection", "Starting Glove Selection");
         super.onStart();
 
-        Button loginButton = (Button) findViewById(R.id.loginButton);
-        Button scanButton = (Button) findViewById(R.id.scanButton);
-
-        if (ParticleCloudSDK.getCloud().isLoggedIn()) {
-            loginButton.setText("Logout");
-        }
+        invalidateOptionsMenu();
 
         sManager.bind();
         //tell the service to start discovery
@@ -122,13 +147,12 @@ public class BLESelectionActivity extends AppCompatActivity {
         sManager.unbind();
     }
 
-    public void loginButtonPressed(View view) {
+    public void loginButtonPressed() {
         // Do something in response to button
         Log.d("Clicked", "Clicked");
         if (ParticleCloudSDK.getCloud().isLoggedIn()) {
             ParticleCloudSDK.getCloud().logOut();
-            Button loginButton = (Button) findViewById(R.id.loginButton);
-            loginButton.setText("Login");
+            invalidateOptionsMenu();
         } else {
             Intent intent = new Intent(this, ParticleLoginActivity.class);
             startActivity(intent);
