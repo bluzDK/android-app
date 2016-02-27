@@ -21,6 +21,10 @@
         <item name="android:textColor">@color/text_color</item>
         <item name="android:editTextColor">@color/text_color</item>
         <item name="android:textColorHint">#666666</item>
+
+    </style>
+
+    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
     </style>
 
 </resources>

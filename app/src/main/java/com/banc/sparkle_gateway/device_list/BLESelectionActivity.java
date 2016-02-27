@@ -25,6 +25,7 @@ import com.banc.sparkle_gateway.R;
 import com.banc.sparkle_gateway.login.ParticleLoginActivity;
 import com.banc.sparkle_gateway.service.BLEService;
 import com.banc.sparkle_gateway.service.ServiceManager;
+import com.banc.util.Utils;
 import com.banc.util.Values;
 
 import java.io.IOException;
@@ -41,6 +42,8 @@ public class BLESelectionActivity extends AppCompatActivity {
     static BLEDeviceInfoList sCurrentDevices;
 
     private DeviceAdapter mAdapter;
+
+    private Button mScanButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +69,8 @@ public class BLESelectionActivity extends AppCompatActivity {
         ListView list = (ListView) findViewById(R.id.listView1);
         mAdapter = new DeviceAdapter(this);
         list.setAdapter(mAdapter);
+
+        mScanButton = (Button) findViewById(R.id.scanButton);
 
         sManager = new ServiceManager(this, BLEService.class, new HandlerExtension());
         if (!sManager.isRunning()) {
@@ -109,15 +114,12 @@ public class BLESelectionActivity extends AppCompatActivity {
         invalidateOptionsMenu();
 
         sManager.bind();
-        //tell the service to start discovery
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putInt("info", BLEService.START_DISCOVERY);
-        msg.setData(b);
-        try {
-            sManager.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        if (Utils.isBluetoothEnabled()
+                && Utils.hasLocationPermission(this)
+                && Utils.locationIsEnabled(this)) {
+            startScan();
+        } else {
+            stopScan();
         }
     }
 
@@ -127,15 +129,7 @@ public class BLESelectionActivity extends AppCompatActivity {
         super.onStop();
 
         //tell the service to stop discovery
-        Message msg = new Message();
-        Bundle b = new Bundle();
-        b.putInt("info", BLEService.STOP_DISCOVERY);
-        msg.setData(b);
-        try {
-            sManager.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        stopScan();
     }
 
     @Override
@@ -162,32 +156,20 @@ public class BLESelectionActivity extends AppCompatActivity {
     public void scanButtonPressed(View view) {
         // Do something in response to button
         Log.d("Clicked", "Clicked");
-        Button scanButton = (Button) findViewById(R.id.scanButton);
 
-        if ("stop".equalsIgnoreCase((String) scanButton.getText())) {
-            Message msg = new Message();
-            Bundle b = new Bundle();
-            b.putInt("info", BLEService.STOP_DISCOVERY);
-            msg.setData(b);
-            try {
-                sManager.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-            scanButton.setText("Scan");
+        if ("stop".equalsIgnoreCase((String) mScanButton.getText())) {
+            stopScan();
         } else {
-            Message msg = new Message();
-            Bundle b = new Bundle();
-            b.putInt("info", BLEService.START_DISCOVERY);
-            msg.setData(b);
-            try {
-                sManager.send(msg);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            if (!Utils.isBluetoothEnabled()) {
+                Utils.enableBluetooth(this);
+            } if (!Utils.hasLocationPermission(this)) {
+                Utils.askLocationPermission(this);
+            } if (!Utils.locationIsEnabled(this)) {
+                Utils.enableLocation(this);
+            } else {
+                startScan();
             }
-            scanButton.setText("Stop");
         }
-
     }
 
     private void updateTable(BLEDeviceInfoList devices) {
@@ -195,6 +177,42 @@ public class BLESelectionActivity extends AppCompatActivity {
         if (mAdapter != null) {
             mAdapter.updateDevices(devices);
         }
+    }
+
+    private void startScan() {
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putInt("info", BLEService.START_DISCOVERY);
+        msg.setData(b);
+        try {
+            sManager.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mScanButton.setText(R.string.stop);
+            }
+        });
+    }
+
+    private void stopScan() {
+        Message msg = new Message();
+        Bundle b = new Bundle();
+        b.putInt("info", BLEService.STOP_DISCOVERY);
+        msg.setData(b);
+        try {
+            sManager.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mScanButton.setText(R.string.scan);
+            }
+        });
     }
 
     private class HandlerExtension extends Handler {
