@@ -74,7 +74,7 @@ public class BLEManager extends Observable implements Observer {
 //        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 //        updateState(bluetoothAdapter.isEnabled() ? STATE_DISCONNECTED : STATE_BLUETOOTH_OFF);
         
-        scanner = new BLEScanner();
+        scanner = new BLEScanner(context);
 	}
 
     static public BLEDeviceInfoList GetList() {return scanner.newDevices;}
@@ -191,7 +191,7 @@ public class BLEManager extends Observable implements Observer {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.i(TAG, "Connected to Sparkle.");
+                Log.i(TAG, "isConnected to Sparkle.");
                 Log.i(TAG, "Attempting to start service discovery:" +
                         devInfo.mBluetoothGatt.discoverServices());
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -276,7 +276,7 @@ public class BLEManager extends Observable implements Observer {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
-//        	Log.d("BLEManager", "Characteristic Read");
+//        	Log.d("BLEManager", "Characteristic read");
             if (status == BluetoothGatt.GATT_SUCCESS) {
 //            	Log.d("DEBUG", "Data available");
                 BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
@@ -294,7 +294,7 @@ public class BLEManager extends Observable implements Observer {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-//        	Log.d("BLEManager", "Characteristic Read");
+//        	Log.d("BLEManager", "Characteristic read");
             BLEDeviceInfo devInfo = GetBLEDeviceInfoByAddress(gatt.getDevice().getAddress());
 //            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             BLEEvent event = new BLEEvent();
@@ -444,6 +444,7 @@ public class BLEManager extends Observable implements Observer {
         // parameter to false.
         devInfo.mBluetoothGatt = device.connectGatt(context, false, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
+        updateState(devInfo, BLEDeviceInfo.STATE_CONNECTING);
         return true;
     }
 

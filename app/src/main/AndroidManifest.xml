@@ -3,22 +3,24 @@
     package="com.banc.sparkle_gateway"
     android:versionCode="1"
     android:versionName="1.0" >
-
-    <uses-sdk
-        android:minSdkVersion="18"
-        android:targetSdkVersion="18" />
     
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/bluz_icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <!-- Activities -->
+g
         <activity
-            android:name="com.banc.sparkle_gateway.BLESelection"
+            android:name=".device_list.BLESelectionActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
             <intent-filter>
@@ -28,20 +30,18 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.banc.sparkle_gateway.BLEService" >
+        <activity
+            android:name=".login.ParticleLoginActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:launchMode="singleInstance"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+        </activity>
+
+        <!-- Services -->
+
+        <service android:name=".service.BLEService" >
         </service>
-
-        <activity
-            android:name="com.banc.sparkle_gateway.BLEDisplay"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" >
-        </activity>
-
-        <activity
-            android:name="com.banc.sparkle_gateway.ParticleLoginDisplay"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" >
-        </activity>
 
     </application>
 

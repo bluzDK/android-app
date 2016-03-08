@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blue_dark">#1C5F83</color>
+    <color name="blue_bluz">#2D6FA3</color>
+    <color name="white">#FFFFFF</color>
+    <color name="grey_dark">#555555</color>
+    <color name="grey_light">#CCCCCC</color>
+    <color name="grey_light_mid">#DDDDDD</color>
+    <color name="grey_lighter">#EEEEEE</color>
+
+    <color name="activity_bg">#EDEDED</color>
+    <color name="text_color">#353535</color>
+</resources>

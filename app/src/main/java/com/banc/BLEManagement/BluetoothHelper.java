@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice;
 
 import java.util.UUID;
 
-import com.banc.sparkle_gateway.HexAsciiHelper;
+import com.banc.util.HexAsciiHelper;
 
 public class BluetoothHelper {
     public static String shortUuidFormat = "871e%04X-38ff-77b1-ed41-9fb3aa142db2";
