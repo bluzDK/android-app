@@ -318,7 +318,7 @@ public class BLEManager extends Observable implements Observer {
 //        		android.util.Log.d("BLEManager ", "  Millisecinds success " + System.currentTimeMillis());
                 devInfo.transmissionDone = true;
         	}
-        	
+
         }
     };
     
@@ -495,7 +495,8 @@ public class BLEManager extends Observable implements Observer {
     		return true;
     	}
     }
-    
+
+    synchronized
     static public boolean send(BLEDeviceInfo devInfo, byte[] data, byte[] header) {
         if (devInfo.mBluetoothGatt == null || devInfo.mBluetoothGattService == null) {
             Log.w(TAG, "BluetoothGatt not initialized");
