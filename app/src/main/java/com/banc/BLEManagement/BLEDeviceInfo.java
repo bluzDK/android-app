@@ -174,8 +174,14 @@ public class BLEDeviceInfo implements Runnable {
 
 					@Override
 					public void onSuccess(Object value) {
-						Log.d("Device Name Retreieved", (String)value);
-						cloudName = (String)value;
+						String name;
+						if (value != null) {
+							name = (String) value;
+						} else {
+							name = "";
+						}
+						Log.d("Device Name Retreieved", name);
+						cloudName = name;
 						isClaimed = true;
 						BLEService.DeviceInfoChanged();
 					}
