@@ -14,7 +14,7 @@ public class ParticleSocket {
     private final static String TAG = "ParticleSocket";
 
     //live server
-    private String mCloudServer = "54.208.229.4";
+    private String mCloudServer = "device.spark.io";
     //staging server
 //	private String mCloudServer = "staging-device.spark.io";
     //local server
