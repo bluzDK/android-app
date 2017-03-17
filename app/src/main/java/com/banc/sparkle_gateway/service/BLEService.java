@@ -86,9 +86,6 @@ public class BLEService extends AbstractService implements Observer {
         // TODO Auto-generated method stub
 //		Log.d("SparkLEServices", "Received event from BLEManager");
         BLEEvent event = (BLEEvent) data;
-        if (event.DeviceInfo == null) {
-            Log.d("WTF!!!", "devInfo is null!");
-        }
         switch (event.BLEEventType) {
             case BLEEvent.EVENT_UPDATE:
                 updateUI(event);

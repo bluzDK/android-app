@@ -62,7 +62,7 @@ public class BLEDeviceInfo implements Runnable {
 	int ulBufferLength;
 
 	//internal flags so the manager can keep track of successful transmissions
-	boolean transmissionDone = false;
+	volatile boolean transmissionDone = false;
 
 	//internal var to keep track of last service
 	byte lastService = 0x00;
